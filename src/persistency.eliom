@@ -101,7 +101,9 @@ let get path =
 
 (* bootstraping ****************************************************************************************)
 
+(*
 let _ = 
   Lwt_main.run (Challenges.init ()) ;
   Lwt_main.run (Solutions.init ()) ; 
   Uid.unlock () 
+*)

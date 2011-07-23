@@ -86,25 +86,34 @@ let uid t =
   t.uid
     
 
-(* 
+
 {client{
-let new_challenge_form (author ,(title ,(description, (difficulty, hints)))) =
-  [
-    int_input ~input_type:`Hidden ~value:0 ~name:difficulty () ;
-    string_input ~input_type:`Text ~name:title () ;
-    string_input ~input_type:`Text ~name:author () ;
-    textarea ~rows:10 ~cols:50 ~name:description () ;
-    string_input ~input_type:`Text ~name:hints () ;
-  ] 
-}} *)
+  let new_challenge_form (author ,(title ,(description, (difficulty, hints)))) =
+    [
+      int_input ~input_type:`Hidden ~value:0 ~name:difficulty () ;
+      string_input ~input_type:`Text ~name:title () ;
+      string_input ~input_type:`Text ~name:author () ;
+      textarea ~rows:10 ~cols:50 ~name:description () ;
+      string_input ~input_type:`Text ~name:hints () ;
+    ]
+      
+  let init container service =  
+    alert "building the form" ;
+    let form = post_form ~service new_challenge_form () in
+    Dom_html.appendChild container form
+}}
 
 let new_handler _ _ =
- Eliom_services.onload {{
-   (* post_form ~service:%Services.Frontend.challenge_new new_challenge_form () *)
-   ()
-  }}; 
+  let c = unique (div []) in
+  
+  Eliom_services.onload  {{
+    init (Eliom_client.Html5.of_element c) %Services.Frontend.challenge_new_post 
+  }} ; 
+ 
+
   Nutshell.home [
-    h1 [ pcdata "hello" ]
+    h1 [ pcdata "hello" ]; 
+    c 
   ]
   
 
