@@ -4,7 +4,7 @@ open Types
 type t = 
     {
       uid : sdb_key ; 
-      
+
       author : string ;
 
       active : bool ; 

@@ -1,9 +1,9 @@
-MODULE = internships
-APP = internships
+MODULE = ocaml_challenge
+APP = ocaml_challenge
 
 include ../Makefile.config
 
-SERVERFILES := services.eliom appl.eliom nutshell.eliom oClosure_extra.eliom home.eliom
+SERVERFILES := types.eliom challenge.eliom solution.eliom services.eliom appl.eliom misc.eliom nutshell.eliom fallback.eliom oClosure_extra.eliom home.eliom
 CLIENTFILES := oClosure_extra.eliom home.eliom
 
 SERVERLIB := -package eliom.server

@@ -28,8 +28,8 @@
     <host charset="utf-8" hostfilter="*">
       
       <site path="" charset="utf-8">
-	  <static dir="./public" />
-	  <eliom module="./src/_build/server/internships.cmo">
+	  <static dir="/Users/simon/programation/besport/ocaml-challenges/public" />
+	  <eliom module="./src/_build/server/ocaml_challenge.cmo">
           <cache-size>10000</cache-size>
           <page-id>253865891294658</page-id>
 	    <status-storage>/tmp/statuses</status-storage>
