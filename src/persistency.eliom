@@ -91,13 +91,38 @@ module Solutions = LFactory (Solution)
 
 (* s3 **************************************************************************************************)
 
-let fresh_path () = 
-  let bucket = Config.get_param "s3_bucket" in
-  Printf.sprintf "%s/%s" bucket (Uid.generate ())
+exception S3_error
+
+let default_region = ref `US_EAST_1
+let bucket = Config.get_param "s3_bucket" 
+
+let rec load objekt = 
+  S3.get_object_s 
+    (Some creds)
+    !default_region
+    ~bucket
+    ~objekt
+  >>= fun r -> 
+  match r with 
+    | `Ok s ->  return s
+    | `NotFound 
+    | `AccessDenied -> fail S3_error
+    | `Error _ -> fail S3_error
+    | `PermanentRedirect (Some r) -> default_region := r ; load objekt
+    | `PermanentRedirect None ->  default_region := `US_EAST_1 ; load objekt
+
+let store objekt body = 
+  S3.put_object creds !default_region ~bucket ~objekt ~body:(`String body) 
 
 
-let get path = 
-  S3.get_object (Some creds) path 
+module S3_cache = Ocsigen_cache.Make (struct type key = string type value = string end)
+
+let s3_cache = new S3_cache.cache load (int_of_string (Config.get_param "cache-size"))
+
+let get = s3_cache # find 
+let set key value = 
+  store key value
+  >>= fun _ -> s3_cache # add key value ; return () 
 
 (* bootstraping ****************************************************************************************)
 
