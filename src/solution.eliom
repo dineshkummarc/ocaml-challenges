@@ -1,13 +1,13 @@
-open Misc
-open Types 
-
-let cache_size = int_of_string (Config.get_param "cache_size")
-let domain = Config.get_param "sdb_domain_solutions"
-
-exception BadType
-
 {shared{
        
+
+  open Lwt
+  
+  open HTML5.M
+  open Eliom_output.Html5
+  
+  open Types
+
   let __name__ = "solutions" 
 
   type status = [ `Score of int | `Failed of (string * string) | `Pending ]
@@ -24,7 +24,22 @@ exception BadType
         
         status : status ; 
       }
+
+
+  let render_html5 s3_service t = 
+    return (div
+              [
+                h3 [ pcdata t.author ]
+              ])
+
 }}
+
+open Misc
+
+let cache_size = int_of_string (Config.get_param "cache_size")
+let domain = Config.get_param "sdb_domain_solutions"
+
+exception BadType
 
 (* sdb functions *************************************************************************************)
 

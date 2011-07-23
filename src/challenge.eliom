@@ -1,47 +1,47 @@
 {shared{
 
-open Lwt
-
-open HTML5.M
-open Eliom_output.Html5
-
-open Types
-
-let __name__ = "challenges" 
-
-type t = 
-    {
-      uid : sdb_key ; 
+  open Lwt
+  
+  open HTML5.M
+  open Eliom_output.Html5
+  
+  open Types
+  
+  let __name__ = "challenges" 
+    
+  type t = 
+      {
+        uid : sdb_key ; 
+        
+        author : string ;
+        
+        active : bool ; 
+        submission_date : Date.t ; 
+        
+        title : string ; 
+        description : s3_path ; 
+        signature : string ; 
+        difficulty : int ; (* 1 - 10 *)
+        
+        hints : s3_path list ; 
+        tags : string list ; 
+        
+        sample_solution : s3_path ; 
+        
+        control_code : s3_path ; 
+        
+        submitted_solutions : sdb_key list ; 
+        
+        facebook_id : string ;
+      }
+        
+        
+  let render_html5 s3_service t = 
+    return (div
+              [
+                h3 [ pcdata t.title ]
+              ])
       
-      author : string ;
-
-      active : bool ; 
-      submission_date : Date.t ; 
-
-      title : string ; 
-      description : s3_path ; 
-      signature : string ; 
-      difficulty : int ; (* 1 - 10 *)
-      
-      hints : s3_path list ; 
-      tags : string list ; 
-      
-      sample_solution : s3_path ; 
-
-      control_code : s3_path ; 
-      
-      submitted_solutions : sdb_key list ; 
-      
-      facebook_id : string ;
-    }
-
-
-let render_html5 s3_service t = 
-  return (div
-            [
-              h3 [ pcdata t.title ]
-            ])
-
 }}
 
 open Misc

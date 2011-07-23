@@ -7,7 +7,7 @@ SERVERFILES := types.eliom misc.eliom config.eliom uid.eliom services.eliom appl
 	         nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom\
 	         oClosure_extra.eliom home.eliom toplevel.eliom backend.eliom
 
-CLIENTFILES := types.eliom misc.eliom services.eliom challenge.eliom home.eliom backend.eliom
+CLIENTFILES := types.eliom misc.eliom services.eliom solution.eliom challenge.eliom home.eliom backend.eliom
 
 SERVERLIB := -package eliom.server,aws
 CLIENTLIB := -package eliom.client,js_of_ocaml
