@@ -17,4 +17,6 @@ META
 shm*
 *.scrum
 *.cm*
+ocsigen.xml
 *closure_library*
+    

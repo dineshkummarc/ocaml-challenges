@@ -34,12 +34,12 @@ let home content =
            link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/editortoolbar.css") () ;
           *)
            script ~a:[ a_src (uri_of_string "/runtime.js") ] (pcdata "") ;
-           script ~a:[ a_src (uri_of_string "/ocaml_challenge_oclosure.js") ] (pcdata "") ;
+           script ~a:[ a_src (uri_of_string "/challenges_oclosure.js") ] (pcdata "") ;
 
       ])
       (body [
         header [
-          hgroup (h1 [ pcdata "Ocaml challenge" ]) [
+          hgroup (h1 [ pcdata "Ocaml challenges" ]) [
             h4 [ pcdata "Made by baoug (Baoug ! Baoug !)" ]
           ];
           nav [

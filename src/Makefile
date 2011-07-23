@@ -1,12 +1,13 @@
-MODULE = ocaml_challenge
-APP = ocaml_challenge
+MODULE = challenges
+APP = challenges
 
 include ../Makefile.config
 
-SERVERFILES := services.eliom appl.eliom misc.eliom nutshell.eliom types.eliom solution.eliom challenge.eliom fallback.eliom oClosure_extra.eliom home.eliom
+SERVERFILES := config.eliom persistency.eliom services.eliom appl.eliom misc.eliom nutshell.eliom types.eliom solution.eliom challenge.eliom fallback.eliom oClosure_extra.eliom home.eliom
+
 CLIENTFILES := oClosure_extra.eliom home.eliom
 
-SERVERLIB := -package eliom.server
+SERVERLIB := -package eliom.server,calendar,aws
 CLIENTLIB := -package oclosure,js_of_ocaml
 
 INCLUDES := 
