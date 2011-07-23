@@ -5,7 +5,7 @@ include ../Makefile.config
 
 SERVERFILES := misc.eliom config.eliom uid.eliom types.eliom services.eliom appl.eliom\
 	         nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom\
-	         oClosure_extra.eliom home.eliom toplevel.eliom
+	         oClosure_extra.eliom home.eliom toplevel.eliom backend.eliom
 
 CLIENTFILES := home.eliom challenges.eliom
 

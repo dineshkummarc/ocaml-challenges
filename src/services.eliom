@@ -26,3 +26,8 @@ module Frontend =
     let solution_list = service [ "challenge"; "solution"; "list" ] (suffix (string "challenge_id")) ()
 
 end
+
+module Backend = 
+  struct 
+    let home = service [ "backend" ; "home" ] unit () 
+  end

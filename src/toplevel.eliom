@@ -7,9 +7,10 @@ open Types
 open Misc
 
 let (>>=) =  Lwt.(>>=)
-
+    
 let timeout = float_of_string (Config.get_param "ocaml_timeout")
 let ocaml = Config.get_param "ocaml_path"
+
 let main_function = "main"
 
 (** Extract signature of function that soluton expects *)

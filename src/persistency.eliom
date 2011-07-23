@@ -126,9 +126,9 @@ let set key value =
 
 (* bootstraping ****************************************************************************************)
 
-(*
+
 let _ = 
   Lwt_main.run (Challenges.init ()) ;
   Lwt_main.run (Solutions.init ()) ; 
   Uid.unlock () 
-*)
+
