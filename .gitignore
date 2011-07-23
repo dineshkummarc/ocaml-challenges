@@ -19,4 +19,4 @@ shm*
 *.cm*
 ocsigen.xml
 *closure_library*
-    
+/public/challenges*.js
