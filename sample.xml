@@ -24,16 +24,19 @@
     <extension findlib-package="eliom.server"/>
     <extension findlib-package="yojson"/>
     <extension findlib-package="calendar"/>
+    <extension findlib-package="aws.cohttp"/>
     
     <host charset="utf-8" hostfilter="*">
       
       <site path="" charset="utf-8">
 	  <static dir="/Users/simon/programation/besport/ocaml-challenges/public" />
-	  <eliom module="./src/_build/server/ocaml_challenge.cmo">
-          <cache-size>10000</cache-size>
-          <page-id>253865891294658</page-id>
-	    <status-storage>/tmp/statuses</status-storage>
-        </eliom>
+	  <eliom module="./src/_build/server/challenges.cmo">
+            <cache_size>10000</cache_size>
+	    <sdb_domain_challenges>baoug_challenges</sdb_domain_challenges>
+            <sdb_domain_solutions>baoug_solutions</sdb_domain_solutions>
+            <aws_access_key_id></aws_access_key_id>
+            <aws_secret_access_key></aws_secret_access_key>
+          </eliom>
       </site>
     
     </host>
