@@ -1,17 +1,11 @@
-open CalendarLib 
-
-open Misc
-open Types
-
 {shared{
+
 open Lwt
 
 open HTML5.M
 open Eliom_output.Html5
-}}
 
-let cache_size = int_of_string (Config.get_param "cache_size")
-let domain = Config.get_param "sdb_domain_challenges"
+open Types
 
 type t = 
     {
@@ -39,6 +33,13 @@ type t =
       facebook_id : string ;
     }
 
+}}
+
+open Misc
+
+let cache_size = int_of_string (Config.get_param "cache_size")
+let domain = Config.get_param "sdb_domain_challenges"
+
 (* sdb functions *************************************************************************************)
 
 let to_sdb t = 
@@ -49,7 +50,7 @@ let to_sdb t =
             "uid", t.uid ; 
             "author", t.author ;
             "active", string_of_bool t.active ; 
-            "submission_date", Printer.Date.to_string t.submission_date ; 
+            "submission_date", Date.to_string t.submission_date ; 
             "title", t.title ;
             "description", t.description ; 
              "signature", t.signature ;

@@ -1,28 +1,28 @@
-open CalendarLib 
 open Misc
 open Types 
-
 
 let cache_size = int_of_string (Config.get_param "cache_size")
 let domain = Config.get_param "sdb_domain_solutions"
 
-
 exception BadType
 
-type status = [ `Score of int | `Failed of (string * string) | `Pending ]
- 
-type t = 
-    {
-      uid : sdb_key ; 
-      
-      author : string ;
-      challenge_id : sdb_key ; 
-      date : Date.t ; 
-      
-      content : s3_path ;
-
-      status : status ; 
-    }
+{shared{
+       
+  type status = [ `Score of int | `Failed of (string * string) | `Pending ]
+           
+  type t = 
+      {
+        uid : sdb_key ; 
+        
+        author : string ;
+        challenge_id : sdb_key ; 
+        date : Date.t ; 
+        
+        content : s3_path ;
+        
+        status : status ; 
+      }
+}}
 
 (* sdb functions *************************************************************************************)
 
@@ -54,7 +54,7 @@ let to_sdb t =
       "uid", t.uid ;
       "author", t.author ; 
       "challenge_id", t.challenge_id ; 
-      "date", Printer.Date.to_string t.date ; 
+      "date", Date.to_string t.date ; 
       "content", t.content ; 
     ] t.status
 

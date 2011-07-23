@@ -117,7 +117,7 @@ let store objekt body =
 
 module S3_cache = Ocsigen_cache.Make (struct type key = string type value = string end)
 
-let s3_cache = new S3_cache.cache load (int_of_string (Config.get_param "cache-size"))
+let s3_cache = new S3_cache.cache load (int_of_string (Config.get_param "cache_size"))
 
 let get = s3_cache # find 
 let set key value = 
