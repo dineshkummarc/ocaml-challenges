@@ -1,5 +1,10 @@
 open CalendarLib 
+open Misc
 open Types 
+
+
+let cache_size = int_of_string (Config.get_param "cache_size")
+let domain = Config.get_param "sdb_domain_solutions"
 
 exception BadType
 
@@ -40,22 +45,22 @@ let status_to_sdb acc = function
     :: acc
 
 let status_of_sdb l =
-  match int_of_string (List.assoc l "status.kind") with 
-      0 -> `Score (int_of_string (List.assoc l "status.score"))
-    | 1 -> `Failed (List.assoc l "status.msg", List.assoc l "status.exn") 
+  match int_of_string (List.assoc "status.kind" l) with 
+      0 -> `Score (int_of_string (List.assoc "status.score" l))
+    | 1 -> `Failed (List.assoc "status.msg" l, List.assoc "status.exn" l) 
     | 2 -> `Pending
     | _ -> raise BadType  
         
 
 let to_sdb t = 
-  [
-    "uid", t.uid ;
-    "author", t.author ; 
-    "challenge_id", t.challenge_id ; 
-    "date", Printer.Date.to_string t.date ; 
-    "content", t.content ; 
-    "status", status_to_sdb t.status 
-  ]
+  status_to_sdb 
+    [
+      "uid", t.uid ;
+      "author", t.author ; 
+      "challenge_id", t.challenge_id ; 
+      "date", Printer.Date.to_string t.date ; 
+      "content", t.content ; 
+    ] t.status
 
 
 let of_sdb l = 
@@ -67,3 +72,8 @@ let of_sdb l =
     content = fetch_string l "content" ; 
     status = status_of_sdb l
   }
+
+
+let uid t = 
+  t.uid
+    

@@ -3,6 +3,9 @@ open CalendarLib
 open Misc
 open Types
 
+let cache_size = int_of_string (Config.get_param "cache_size")
+let domain = Config.get_param "sdb_domain_challenges"
+
 type t = 
     {
       uid : sdb_key ; 
@@ -74,13 +77,7 @@ let of_sdb l =
     facebook_id = fetch_string l "facebook_id" ;
   
 }
+
+let uid t = 
+  t.uid
     
-
-(* benchmarking code *)
-
-let benchmark f = 
-  assert ( f 1 = 2)
-
-(* sample solution *)
-
-let test n = n + 1 

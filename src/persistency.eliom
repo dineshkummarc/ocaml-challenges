@@ -78,3 +78,6 @@ module LFactory (L : LS) =
       
     
   end
+
+module Challenges = LFactory (Challenge)
+module Solutions = LFactory (Solution)
