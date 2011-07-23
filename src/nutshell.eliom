@@ -54,7 +54,7 @@ let home content =
           ]
         ];
         div ~a:[ a_id "container"] content;
-      g  footer [
+        footer [
           span [ pcdata "This is the Footer" ]
         ];
         div ~a:[ a_id "fb-root" ] []

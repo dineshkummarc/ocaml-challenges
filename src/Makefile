@@ -3,7 +3,7 @@ APP = ocaml_challenge
 
 include ../Makefile.config
 
-SERVERFILES := types.eliom challenge.eliom solution.eliom services.eliom appl.eliom misc.eliom nutshell.eliom fallback.eliom oClosure_extra.eliom home.eliom
+SERVERFILES := services.eliom appl.eliom misc.eliom nutshell.eliom types.eliom solution.eliom challenge.eliom fallback.eliom oClosure_extra.eliom home.eliom
 CLIENTFILES := oClosure_extra.eliom home.eliom
 
 SERVERLIB := -package eliom.server
@@ -26,7 +26,7 @@ $(STATICDIR)/$(APP)_oclosure.js: $(STATICDIR)/$(APP).js
 
 pack: $(STATICDIR)/$(APP).js $(STATICDIR)/$(APP)_oclosure.js 
 
-install: 
+install:
 	$(OCAMLFIND) install frontend META _build/server/frontend.cmo _build/server/frontend.cmi
 	install -d $(PREFIX)/var/www/cathedral
 
