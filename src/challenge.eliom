@@ -3,9 +3,12 @@ open CalendarLib
 open Misc
 open Types
 
+{shared{
 open Lwt
+
 open HTML5.M
 open Eliom_output.Html5
+}}
 
 let cache_size = int_of_string (Config.get_param "cache_size")
 let domain = Config.get_param "sdb_domain_challenges"
@@ -84,38 +87,45 @@ let of_sdb l =
 
 let uid t = 
   t.uid
-    
 
 
 {client{
+
   let new_challenge_form (author ,(title ,(description, (difficulty, hints)))) =
     [
       int_input ~input_type:`Hidden ~value:0 ~name:difficulty () ;
-      string_input ~input_type:`Text ~name:title () ;
-      string_input ~input_type:`Text ~name:author () ;
-      textarea ~rows:10 ~cols:50 ~name:description () ;
-      string_input ~input_type:`Text ~name:hints () ;
+      div [
+        label ~a:([a_for "title_challenge"]) [ pcdata "Title:" ];
+        string_input ~a:([a_id "title_challenge"; a_required `Required]) ~input_type:`Text ~name:title () ;
+      ];
+      div [
+        label ~a:([a_for "author_challenge"]) [ pcdata "Author:" ];
+        string_input ~a:([a_id "author_challenge"; a_required `Required]) ~input_type:`Text ~name:author () ;
+      ];
+      div [
+        label ~a:([a_for "desc_challenge"]) [ pcdata "Describe your problem:" ];
+        textarea ~a:([ a_id "desc_challenge"; a_required `Required]) ~rows:10 ~cols:50 ~name:description () ;
+      ];
+      div [
+        label ~a:([a_for "hints_challenge"]) [ pcdata "Some hints" ];
+        string_input ~a:([ a_id "hints_challenge"]) ~input_type:`Text ~name:hints () ;
+      ];
+      raw_input ~input_type:`Submit ~value:"submit" ()
     ]
       
-  let init container service =  
-    alert "building the form" ;
+  let init container service =
     let form = post_form ~service new_challenge_form () in
-    Dom_html.appendChild container form
+    Dom.appendChild container (Eliom_client.Html5.of_element form)
 }}
 
 let new_handler _ _ =
   let c = unique (div []) in
-  
-  Eliom_services.onload  {{
-    init (Eliom_client.Html5.of_element c) %Services.Frontend.challenge_new_post 
-  }} ; 
- 
 
-  Nutshell.home [
-    h1 [ pcdata "hello" ]; 
-    c 
-  ]
-  
+  Eliom_services.onload  {{
+    init (Eliom_client.Html5.of_element %c) %Services.Frontend.challenge_new_post
+  }} ;
+
+  Nutshell.home [ c ]
 
 let _ = 
   Appl.register Services.Frontend.challenge_new new_handler
