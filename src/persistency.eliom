@@ -8,12 +8,61 @@ let creds =
     Creds.aws_secret_access_key = Config.get_param "aws_secret_access_key" ;
   }
 
+
+
+
+(* s3 **************************************************************************************************)
+
+module S3 = 
+  struct 
+
+    exception S3_error
+      
+    let default_region = ref `US_EAST_1
+    let bucket = Config.get_param "s3_bucket" 
+      
+    let rec load objekt = 
+      S3.get_object_s 
+        (Some creds)
+        !default_region
+        ~bucket
+        ~objekt
+      >>= fun r -> 
+      match r with 
+        | `Ok s ->  return s
+        | `NotFound 
+        | `AccessDenied -> fail S3_error
+        | `Error _ -> fail S3_error
+        | `PermanentRedirect (Some r) -> default_region := r ; load objekt
+        | `PermanentRedirect None ->  default_region := `US_EAST_1 ; load objekt
+          
+    let store objekt body = 
+      S3.put_object creds !default_region ~bucket ~objekt ~body:(`String body) 
+        
+        
+    module S3_cache = Ocsigen_cache.Make (struct type key = string type value = string end)
+      
+    let s3_cache = new S3_cache.cache load (int_of_string (Config.get_param "cache_size"))
+      
+    let get = s3_cache # find 
+      
+    let set key value = 
+      store key value
+      >>= fun _ -> s3_cache # add key value ; return () 
+        
+
+  end
+
+(* sdb ***************************************************************************************************)
+
 module type LS = 
   sig
     type t 
 
     val cache_size : int
     val domain : string 
+
+    val __name__ : string 
 
     val uid : t -> sdb_key
     val of_sdb : (string * string) list -> t
@@ -24,6 +73,10 @@ module LFactory (L : LS) =
   struct
     
     exception Error
+
+    type t = L.t 
+
+    let __name__ = L.__name__
 
     module C = Ocsigen_cache.Make (struct type key = sdb_key type value = L.t end)
             
@@ -51,7 +104,10 @@ module LFactory (L : LS) =
         cache # remove key ; 
         cache # add key value ; 
         return () 
-          
+
+    let list () = 
+      cache # list ()
+
     let rec init ?(token=None) () = 
       SDB.select creds ("select * from " ^ L.domain)
       >>= function 
@@ -81,48 +137,12 @@ module LFactory (L : LS) =
 
     let create_domain () = 
       SDB.create_domain creds L.domain >>= fun _ -> return ()
-            
-            
+                        
   end
 
 module Challenges = LFactory (Challenge)
 module Solutions = LFactory (Solution)
 
-
-(* s3 **************************************************************************************************)
-
-exception S3_error
-
-let default_region = ref `US_EAST_1
-let bucket = Config.get_param "s3_bucket" 
-
-let rec load objekt = 
-  S3.get_object_s 
-    (Some creds)
-    !default_region
-    ~bucket
-    ~objekt
-  >>= fun r -> 
-  match r with 
-    | `Ok s ->  return s
-    | `NotFound 
-    | `AccessDenied -> fail S3_error
-    | `Error _ -> fail S3_error
-    | `PermanentRedirect (Some r) -> default_region := r ; load objekt
-    | `PermanentRedirect None ->  default_region := `US_EAST_1 ; load objekt
-
-let store objekt body = 
-  S3.put_object creds !default_region ~bucket ~objekt ~body:(`String body) 
-
-
-module S3_cache = Ocsigen_cache.Make (struct type key = string type value = string end)
-
-let s3_cache = new S3_cache.cache load (int_of_string (Config.get_param "cache_size"))
-
-let get = s3_cache # find 
-let set key value = 
-  store key value
-  >>= fun _ -> s3_cache # add key value ; return () 
 
 (* bootstraping ****************************************************************************************)
 
@@ -132,3 +152,9 @@ let _ =
   Lwt_main.run (Solutions.init ()) ; 
   Uid.unlock () 
 
+
+(* s3 service *******************************************************************************************)
+
+let s3_get_handler key _ = S3.get key
+
+let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler

@@ -8,6 +8,8 @@ exception BadType
 
 {shared{
        
+  let __name__ = "solutions" 
+
   type status = [ `Score of int | `Failed of (string * string) | `Pending ]
            
   type t = 
@@ -72,4 +74,3 @@ let of_sdb l =
 
 let uid t = 
   t.uid
-

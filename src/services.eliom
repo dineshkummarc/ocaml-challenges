@@ -31,3 +31,8 @@ module Backend =
   struct 
     let home = service [ "backend" ; "home" ] unit () 
   end
+
+module Hidden = 
+  struct 
+    let s3_get = service [ "hidden" ; "s3" ] (suffix (string "key")) () 
+  end

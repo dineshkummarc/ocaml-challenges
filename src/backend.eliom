@@ -45,7 +45,9 @@ open Eliom_output.Html5
 
 module type ELT = 
   sig 
-    val __name__ : string 
+    type t 
+    val __name__ : string
+    val list : unit -> t list
   end
 
 module Viz (E : ELT) = 
@@ -59,8 +61,7 @@ module Viz (E : ELT) =
     let service_get = service [ "get_elements" ; E.__name__ ] unit () 
             
     let handler_get () () = 
-      let references = Hashtbl.create 0 in 
-      return (references, [])
+      return (E.list ())
 
     let _ = Eliom_output.Caml.register service_get handler_get 
 
@@ -76,7 +77,7 @@ module Viz (E : ELT) =
         
   end
 
-module VChallenges = Viz (struct let __name__ = "challenges" end)
+module VChallenges = Viz (Persistency.Challenges)
 
 let home_handler _ _ =
 

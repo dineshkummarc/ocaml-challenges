@@ -7,6 +7,8 @@ open Eliom_output.Html5
 
 open Types
 
+let __name__ = "challenges" 
+
 type t = 
     {
       uid : sdb_key ; 
@@ -88,7 +90,6 @@ let of_sdb l =
 
 let uid t = 
   t.uid
-
 
 {client{
 
