@@ -75,9 +75,18 @@ module LFactory (L : LS) =
           display "> error while selecting over domain %s, waiting for 5 secs and retrying" L.domain ; 
           Lwt_unix.sleep 5.0 >>= init ~token
 
-      
-    
+            
+  (* to be removed *)
+
+    let create_domain () = 
+      SDB.create_domain creds L.domain >>= fun _ -> return ()
+            
+            
   end
 
 module Challenges = LFactory (Challenge)
 module Solutions = LFactory (Solution)
+
+let _ = 
+  Lwt_main.run (Challenges.init ()) ;
+  Lwt_main.run (Solutions.init ())

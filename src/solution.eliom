@@ -19,12 +19,8 @@ type t =
       date : Date.t ; 
       
       content : s3_path ;
-      
-      
+            
       status : status ; 
-      
-      
-      
     }
 
 
