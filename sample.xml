@@ -36,6 +36,8 @@
             <sdb_domain_solutions>baoug_solutions</sdb_domain_solutions>
             <aws_access_key_id></aws_access_key_id>
             <aws_secret_access_key></aws_secret_access_key>
+            <ocaml_path>/usr/local-3.12/bin/ocaml</ocaml_path>
+            <ocaml_timeout>120.</ocaml_timeout>
           </eliom>
       </site>
     
