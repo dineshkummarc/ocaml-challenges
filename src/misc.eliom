@@ -27,6 +27,5 @@ let fetch_string_list l label =
   let rxp = Str.regexp_string (label^".") in
   List.fold_left (fun acc (k, v) -> if Str.string_match rxp k 0 then v :: acc else acc) [] l
   
-
 let fetch_date l label = 
   Printer.Date.from_string (List.assoc label l)
