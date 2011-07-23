@@ -158,3 +158,14 @@ let _ =
 let s3_get_handler key _ = S3.get key
 
 let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler
+
+
+(* s3 helper client side ********************************************************************************)
+
+{client{
+  open Lwt 
+  
+  let fetch_from_s3 service key = 
+    Eliom_client.call_caml_service ~service:Services.Hidden.s3_get key
+
+}}

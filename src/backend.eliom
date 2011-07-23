@@ -9,37 +9,39 @@ open Eliom_output.Html5
 {client{
   
   open HTML5.M 
-
+  
   module type ELT = 
     sig 
+      type t 
       val __name__ : string 
+      val render_html5 : 'a -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
     end
     
-
   module Viz (E : ELT) = 
     struct
       open Lwt
       
-      let display service = 
+      let display service s3_service = 
         Eliom_client.call_caml_service ~service () ()
-        >>= fun (references, elements) -> 
+        >>= fun elements -> 
         alert "Just got %d %s" (List.length elements) E.__name__ ; 
-        let box = div [] in
-        return (Eliom_client.Html5.of_element box)
+        Lwt_list.map_s (E.render_html5 s3_service) elements 
+        >>= fun content ->
+        return (Eliom_client.Html5.of_element (div content))
 
-      let init elt_container click_zone get_service =
+      let init elt_container click_zone get_service s3_service =
         let canceller =
           Event_arrows.run
             (Event_arrows.clicks
                click_zone 
-               (Event_arrows.lwt_arr (fun _ -> display get_service >>= fun b -> Dom.appendChild elt_container b; return ())))
+               (Event_arrows.lwt_arr (fun _ -> display get_service s3_service >>= fun b -> Dom.appendChild elt_container b; return ())))
             () in 
         
         ignore canceller
 
     end
 
-    module VChallenges = Viz (struct let __name__ = "challenges" end)
+    module VChallenges = Viz (Challenge)
 
 }}
 
@@ -86,7 +88,8 @@ let home_handler _ _ =
     VChallenges.init
     (Eliom_client.Html5.of_element %VChallenges.elt_container) 
     (Eliom_client.Html5.of_element %VChallenges.menu_container)
-    %VChallenges.service_get }} in 
+    %VChallenges.service_get
+    %Services.Hidden.s3_get }} in 
 
   Eliom_services.onload onload ;
   Nutshell.home

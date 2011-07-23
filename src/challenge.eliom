@@ -35,6 +35,13 @@ type t =
       facebook_id : string ;
     }
 
+
+let render_html5 s3_service t = 
+  return (div
+            [
+              h3 [ pcdata t.title ]
+            ])
+
 }}
 
 open Misc

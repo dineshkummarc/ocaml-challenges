@@ -3,7 +3,6 @@
 open Eliom_services
 open Eliom_parameters 
 
-
 module Frontend = 
   struct
     let home = service [ "" ] unit () (* problem list *)
@@ -33,6 +32,7 @@ module Backend =
   end
 
 module Hidden = 
-  struct 
-    let s3_get = service [ "hidden" ; "s3" ] (suffix (string "key")) () 
+struct 
+  let s3_get = service [ "hidden" ; "s3" ] (suffix (string "key")) () 
   end
+  
