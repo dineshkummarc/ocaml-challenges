@@ -3,7 +3,6 @@ let ready = ref false
 
 exception Not_ready 
 
-
 let tick i = 
   counter := max i !counter 
 

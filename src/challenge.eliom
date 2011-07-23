@@ -14,6 +14,7 @@ type t =
 
       title : string ; 
       description : s3_path ; 
+      signature : string ; 
       difficulty : int ; (* 1 - 10 *)
       
       hints : s3_path list ; 
@@ -41,6 +42,7 @@ let to_sdb t =
             "submission_date", Printer.Date.to_string t.submission_date ; 
             "title", t.title ;
             "description", t.description ; 
+            "signature", t.signature ;
             "difficulty", string_of_int t.difficulty ; 
             "sample_solution", t.sample_solution ; 
             "control_code", t.control_code ;
@@ -56,6 +58,8 @@ let of_sdb l =
     
     title = fetch_string l "title" ; 
     description = fetch_string l "description" ; 
+    signature = fetch_string l "signature"; 
+    
     difficulty = fetch_int l "difficulty" ;
     
     hints = fetch_string_list l "hints" ; 
@@ -71,5 +75,12 @@ let of_sdb l =
   
 }
     
-  
 
+(* benchmarking code *)
+
+let benchmark f = 
+  assert ( f 1 = 2)
+
+(* sample solution *)
+
+let test n = n + 1 

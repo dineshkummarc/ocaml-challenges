@@ -1,10 +1,4 @@
-{shared{
-  let f () = () 
-}}
-
-
-
-
+let display fmt = Printf.ksprintf print_endline fmt
 
 (* sdb utils *****************************************************************************************)
 
