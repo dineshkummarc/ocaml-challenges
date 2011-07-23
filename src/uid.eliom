@@ -12,3 +12,5 @@ let generate () =
     | true -> incr counter ; string_of_int !counter
 
 
+let unlock () = 
+  ready := true 

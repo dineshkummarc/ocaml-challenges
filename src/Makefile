@@ -3,14 +3,14 @@ APP = challenges
 
 include ../Makefile.config
 
-SERVERFILES := misc.eliom config.eliom types.eliom services.eliom appl.eliom\
+SERVERFILES := misc.eliom config.eliom uid.eliom types.eliom services.eliom appl.eliom\
 	         nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom\
 	         oClosure_extra.eliom home.eliom
 
-CLIENTFILES := oClosure_extra.eliom home.eliom
+CLIENTFILES := home.eliom
 
 SERVERLIB := -package eliom.server,calendar,aws
-CLIENTLIB := -package oclosure,js_of_ocaml
+CLIENTLIB := 
 
 INCLUDES := 
 

@@ -59,11 +59,12 @@ module LFactory (L : LS) =
           (List.iter
              (fun (name, attrs) -> 
                try 
+                 (try Uid.tick (int_of_string name) with _ -> ()); 
                  let attrs = List.fold_left
                    (fun acc -> 
                      function 
-                     label, None -> acc 
-                   | label, Some v -> (label, v) :: acc) [] attrs in
+                       | label, None -> acc 
+                       | label, Some v -> (label, v) :: acc) [] attrs in
                  let value = L.of_sdb attrs in
                  let key = L.uid value in 
                  cache # add key value 
@@ -87,6 +88,20 @@ module LFactory (L : LS) =
 module Challenges = LFactory (Challenge)
 module Solutions = LFactory (Solution)
 
+
+(* s3 **************************************************************************************************)
+
+let fresh_path () = 
+  let bucket = Config.get_param "s3_bucket" in
+  Printf.sprintf "%s/%s" bucket (Uid.generate ())
+
+
+let get path = 
+  S3.get_object (Some creds) path 
+
+(* bootstraping ****************************************************************************************)
+
 let _ = 
   Lwt_main.run (Challenges.init ()) ;
-  Lwt_main.run (Solutions.init ())
+  Lwt_main.run (Solutions.init ()) ; 
+  Uid.unlock () 

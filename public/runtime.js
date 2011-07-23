@@ -221,6 +221,7 @@ MlString.prototype = {
   }
 }
 
+alert ("runtime loaded") ; 
 // Conversion Javascript -> Caml
 function MlWrappedString (s) { this.string = s; }
 MlWrappedString.prototype = new MlString();
