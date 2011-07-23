@@ -13,7 +13,7 @@ let domain = Config.get_param "sdb_domain_challenges"
 type t = 
     {
       uid : sdb_key ; 
-
+      
       author : string ;
 
       active : bool ; 
@@ -21,9 +21,7 @@ type t =
 
       title : string ; 
       description : s3_path ; 
-
       signature : string ; 
-
       difficulty : int ; (* 1 - 10 *)
       
       hints : s3_path list ; 
@@ -51,7 +49,7 @@ let to_sdb t =
             "submission_date", Printer.Date.to_string t.submission_date ; 
             "title", t.title ;
             "description", t.description ; 
-            "signature", t.signature ;
+             "signature", t.signature ;
             "difficulty", string_of_int t.difficulty ; 
             "sample_solution", t.sample_solution ; 
             "control_code", t.control_code ;
@@ -86,6 +84,9 @@ let of_sdb l =
 
 let uid t = 
   t.uid
+    
+
+
 
 let new_challenge_form (author ,(title ,(description, (difficulty, hints)))) =
   [

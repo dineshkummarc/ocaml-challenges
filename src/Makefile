@@ -3,7 +3,9 @@ APP = challenges
 
 include ../Makefile.config
 
-SERVERFILES := config.eliom persistency.eliom services.eliom appl.eliom misc.eliom nutshell.eliom types.eliom solution.eliom challenge.eliom fallback.eliom oClosure_extra.eliom home.eliom
+SERVERFILES := misc.eliom config.eliom types.eliom services.eliom appl.eliom\
+	         nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom\
+	         oClosure_extra.eliom home.eliom
 
 CLIENTFILES := oClosure_extra.eliom home.eliom
 
