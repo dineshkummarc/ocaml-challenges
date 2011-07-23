@@ -1,12 +1,13 @@
-MODULE = internships
-APP = internships
+MODULE = challenges
+APP = challenges
 
 include ../Makefile.config
 
-SERVERFILES := services.eliom appl.eliom nutshell.eliom oClosure_extra.eliom home.eliom
+SERVERFILES := misc.eliom types.eliom challenge.eliom services.eliom services.eliom appl.eliom\
+	         nutshell.eliom oClosure_extra.eliom home.eliom
 CLIENTFILES := oClosure_extra.eliom home.eliom
 
-SERVERLIB := -package eliom.server
+SERVERLIB := -package eliom.server,calendar
 CLIENTLIB := -package oclosure,js_of_ocaml
 
 INCLUDES := 
