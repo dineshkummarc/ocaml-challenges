@@ -108,6 +108,9 @@ module LFactory (L : LS) =
     let list () = 
       cache # list ()
 
+    let cardinal () = 
+      cache # size 
+
     let rec init ?(token=None) () = 
       SDB.select creds ("select * from " ^ L.domain)
       >>= function 

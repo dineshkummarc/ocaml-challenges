@@ -39,8 +39,8 @@ let home content =
       ])
       (body [
         header [
-          hgroup (h1 [ pcdata "Ocaml challenges" ]) [
-            h4 [ pcdata "Made by baoug (Baoug ! Baoug !)" ]
+          hgroup (h1 [ pcdata "OCaml puzzles" ]) [
+            h4 [ pcdata "handcrafted by the Bay Area OCaml Users Group" ]
           ];
           nav [
             ul [

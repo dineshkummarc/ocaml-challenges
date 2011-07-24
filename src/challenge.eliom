@@ -36,7 +36,7 @@
       }
         
         
-  let render_html5 s3_service t = 
+  let render_html5 get_s3 t = 
     return (div
               [
                 h3 [ pcdata t.title ]
