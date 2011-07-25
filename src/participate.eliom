@@ -23,15 +23,21 @@ open HTML5.M
       raw_input ~input_type:`Submit ~value:"Submit" ()
     ]
 
+  (* we can't use event_arrows here as cancel seems to be broken *)
   let init challenge_id submit_solution_btn submit_solution_service = 
     let form = post_form submit_solution_service solution_form challenge_id in 
-    let visible = ref false in 
-    let toggle _ = 
-      match !visible with 
-          true -> ()
-        | false -> empty submit_solution_btn ; Dom.appendChild submit_solution_btn (Eliom_client.Html5.of_element form) in
-    let _ = Event_arrows.run (Event_arrows.clicks submit_solution_btn (Event_arrows.arr toggle)) () in 
-    ()
+    let canceller = ref None in
+    let toggle =
+      Dom_html.handler
+        (fun _ ->  
+          (match !canceller with 
+              None -> alert "none" 
+            | Some c -> alert "cancel!" ; Dom_html.removeEventListener c) ; 
+          empty submit_solution_btn ; 
+          Dom.appendChild submit_solution_btn (Eliom_client.Html5.of_element form); 
+          Js._false) in
+    (*    canceller := Some (Event_arrows.run (Event_arrows.clicks submit_solution_btn (Event_arrows.arr toggle)) ()) ; *)
+    canceller := Some (Dom_html.addEventListener submit_solution_btn Dom_html.Event.click toggle Js._false)
  
 }}
 
