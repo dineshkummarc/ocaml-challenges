@@ -54,5 +54,15 @@ let fetch_date l label =
         List.rev !v 
         
     end
+
+ }}
+
+{client{
+
+  let empty e = 
+    while Js.to_bool (e##hasChildNodes ()) do 
+      let c = e##firstChild in
+      Js.Opt.iter c (fun c -> ignore (e##removeChild (c)))
+    done
   
 }}

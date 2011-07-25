@@ -51,8 +51,7 @@ let submit_a_challenge =
   let init_challenges gets3 service_challenge_view challenges_list challenges = 
     Lwt.ignore_result (render_challenges_list gets3 service_challenge_view challenges_list challenges) 
 
-
-(* activity stuff *)
+  (* activity stuff *)
   let init_activity activity_container bus view_challenge_service max_size = 
     Activity.widget activity_container bus view_challenge_service max_size 
       

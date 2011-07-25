@@ -23,7 +23,9 @@ module Frontend =
     let solution_verif = service [ "solution"; "verif"] unit ()
 
     let solution_list = service [ "challenge"; "solution"; "list" ] (suffix (string "challenge_id")) ()
-      
+   
+    let solution_check_fallback = service [ "solution"; "check" ] (suffix (string "challenge_id")) () 
+    let solution_check = post_service solution_check_fallback (string "name" ** string "solution") ()
 end
 
 module Backend = 
