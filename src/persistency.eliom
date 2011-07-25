@@ -47,8 +47,8 @@ module S3 =
     let get = s3_cache # find 
       
     let set key value = 
-      store key value
-      >>= fun _ -> s3_cache # add key value ; return () 
+    (*  store key value
+      >>= fun _ -> *) s3_cache # add key value ; return () 
         
 
   end
@@ -98,9 +98,9 @@ module LFactory (L : LS) =
       cache # find key
         
     let update value = 
-      save value 
-      >>= function _ ->
-        let key = L.uid value in 
+      (* save value 
+      >>= function _ -> *)
+        let key = L.uid value in
         cache # remove key ; 
         cache # add key value ; 
         return () 

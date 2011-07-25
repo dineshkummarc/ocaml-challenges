@@ -36,11 +36,13 @@ let submit_a_challenge =
     (* XXX empty challenges_list ? *)
     Lwt_list.iter_s 
       (fun challenge -> 
-      (*  Challenge.render_html5 gets3 challenge *) (return (div []))
+        Challenge.render_html5 gets3 challenge
         >>= fun challenge_elt -> 
-        let js_challenge_elt = Eliom_client.Html5.of_element challenge_elt in
+        alert "challenge rendered" ; 
+        let js_challenge_elt = Eliom_client.Html5.of_element (unique challenge_elt) in
         Dom.appendChild challenges_list js_challenge_elt; 
-        let _ = Event_arrows.run (Event_arrows.clicks js_challenge_elt (Event_arrows.lwt_arr (fun _ -> return () ; (* Eliom_client.change_page ~service (Challenge.uid challenge) () *)))) in
+        let _ = Event_arrows.run (Event_arrows.clicks js_challenge_elt (Event_arrows.lwt_arr (fun _ -> Eliom_client.change_page ~service (Challenge.uid challenge) ()))) () in
+        
         return ()) challenges
         
   let load_challenges_page container page = 
@@ -57,7 +59,7 @@ let submit_a_challenge =
 let home_handler _ _ =
   let challenges_cardinal = Persistency.Challenges.cardinal () in
   let challenges = Persistency.Challenges.list () in 
-  let challenges_list = div [] in 
+  let challenges_list = unique (div []) in 
   
   let challenges_next = div [ pcdata "next" ] in 
   let challenges_before = div [ pcdata "before" ] in

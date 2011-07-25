@@ -33,8 +33,8 @@ let home content =
            link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/editor/linkdialog.css") () ;
            link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/editortoolbar.css") () ;
           *)
-           script ~a:[ a_src (uri_of_string "/runtime.js") ] (pcdata "") ;
-           script ~a:[ a_src (uri_of_string "/challenges_oclosure.js") ] (pcdata "") ;
+           script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/runtime.js") ] (pcdata "") ;
+           script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/challenges_oclosure.js") ] (pcdata "") ;
 
       ])
       (body [
