@@ -1,5 +1,4 @@
 {shared{
-       
 
   open Lwt
   
@@ -31,6 +30,10 @@
               [
                 h3 [ pcdata t.author ]
               ])
+
+      
+  let uid t = 
+    t.uid
 
 }}
 
@@ -86,6 +89,3 @@ let of_sdb l =
     status = status_of_sdb l
   }
 
-
-let uid t = 
-  t.uid

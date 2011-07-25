@@ -13,8 +13,8 @@ let fallback _ _ =
   ] >>> Nutshell.home
 
 let _ =
-  Appl.register Services.Frontend.challenge_view fallback;
-
+   Appl.register Services.Frontend.challenge_view fallback;
+  
   (* Appl.register Services.Frontend.challenge_new fallback; *)
   Appl.register Services.Frontend.challenge_new_post fallback;
 

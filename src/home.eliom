@@ -21,20 +21,34 @@ let submit_a_challenge =
       span [ pcdata "Contribute a new puzzle" ]
     ]
 
-
 (* client logic **************************************************************************)
 
 {client{
+
+  open Lwt 
+  open HTML5.M
 
   (* Challenges pages ********************************************************************)
 
   let current_challenges_page = ref 0
   
+  let render_challenges_list gets3 service challenges_list challenges = 
+    (* XXX empty challenges_list ? *)
+    Lwt_list.iter_s 
+      (fun challenge -> 
+      (*  Challenge.render_html5 gets3 challenge *) (return (div []))
+        >>= fun challenge_elt -> 
+        let js_challenge_elt = Eliom_client.Html5.of_element challenge_elt in
+        Dom.appendChild challenges_list js_challenge_elt; 
+        let _ = Event_arrows.run (Event_arrows.clicks js_challenge_elt (Event_arrows.lwt_arr (fun _ -> return () ; (* Eliom_client.change_page ~service (Challenge.uid challenge) () *)))) in
+        return ()) challenges
+        
   let load_challenges_page container page = 
     current_challenges_page := page 
 
-   
-
+  let init gets3 service_challenge_view challenges_list challenges = 
+    alert "registering handlers on the home page" ;
+    Lwt.ignore_result (render_challenges_list gets3 service_challenge_view challenges_list challenges) 
 
 }}
     
@@ -42,10 +56,8 @@ let submit_a_challenge =
 
 let home_handler _ _ =
   let challenges_cardinal = Persistency.Challenges.cardinal () in
-  let challenges_list = Persistency.Challenges.list () in
-  Lwt_list.map_s (Challenge.render_html5 Persistency.S3.get) challenges_list
-  >>= fun challenges ->
-  let challenges_list = div challenges in 
+  let challenges = Persistency.Challenges.list () in 
+  let challenges_list = div [] in 
   
   let challenges_next = div [ pcdata "next" ] in 
   let challenges_before = div [ pcdata "before" ] in
@@ -53,10 +65,16 @@ let home_handler _ _ =
   let challenges_block = 
     div [
       h2 [ pcdata "Current challenges" ; space () ; pcdata (Printf.sprintf "(%d)" challenges_cardinal) ] ;     
-      div [  challenges_next ;  challenges_before ] ; 
+      div [  challenges_next ;  challenges_before ] ;
       challenges_list ;
     ] in
-      
+  
+  Eliom_services.onload {{ 
+    init 
+       (Persistency.fetch_from_s3 %Services.Hidden.s3_get) 
+       %Services.Frontend.challenge_view
+       (Eliom_client.Html5.of_element %challenges_list) %challenges }} ; 
+
   Nutshell.home
     [ 
       description ;

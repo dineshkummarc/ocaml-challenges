@@ -23,7 +23,7 @@ module Frontend =
     let solution_verif = service [ "solution"; "verif"] unit ()
 
     let solution_list = service [ "challenge"; "solution"; "list" ] (suffix (string "challenge_id")) ()
-
+      
 end
 
 module Backend = 

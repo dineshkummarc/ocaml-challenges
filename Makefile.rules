@@ -14,13 +14,13 @@ SERVERCMOS := $(SERVERCMOS:%.ml=${TEMP}/server/%.cmo)
 SERVERLIB  := ${SERVERLIB} ${SERVERINCLUDES}
 
 ${TEMP}/server/%.cmi: %.mli
-	${ELIOMC} -c ${INCLUDES} -dir ${TEMP}/server ${SERVERLIB} $<
+	${ELIOMC}  -c ${INCLUDES} -dir ${TEMP}/server ${SERVERLIB} $<
 ${TEMP}/server/%.cmo: %.ml
-	${ELIOMC} -c ${INCLUDES} -dir ${TEMP}/server ${SERVERLIB} $<
+	${ELIOMC}  -c ${INCLUDES} -dir ${TEMP}/server ${SERVERLIB} $<
 ${TEMP}/server/%.cmo: %.eliom
-	${ELIOMC} -c ${INCLUDES} -noinfer -dir ${TEMP}/server ${SERVERLIB} $<
+	${ELIOMC}  -c ${INCLUDES} -noinfer -dir ${TEMP}/server ${SERVERLIB} $<
 ${TEMP}/server/$(MODULE).cmo: $(SERVERCMOS)
-	${ELIOMC} -pack -o $@ $^
+	${ELIOMC}  -pack -o $@ $^
 
 server-byte: ${TEMP}/server/$(MODULE).cmo
 
@@ -36,7 +36,7 @@ ${TEMP}/client/%.cmi: %.mli
 ${TEMP}/client/%.cmo: %.ml
 	${JS_OF_ELIOM} -c -dir ${TEMP}/client ${CLIENTLIB} $<
 ${TEMP}/client/%.cmo: %.eliom ${TEMP}/%.type_mli
-	${JS_OF_ELIOM} -c -dir ${TEMP}/client -type-dir ${TEMP} ${CLIENTLIB} $<
+	${JS_OF_ELIOM}  -c -dir ${TEMP}/client -type-dir ${TEMP} ${CLIENTLIB} $<
 
 ${TEMP}/client/${MODULE}.cmo: ${CLIENTCMOS}
 	${JS_OF_ELIOM} -pack -o $@ $^

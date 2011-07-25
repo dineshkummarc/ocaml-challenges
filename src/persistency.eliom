@@ -169,6 +169,6 @@ let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler
   open Lwt 
   
   let fetch_from_s3 service key = 
-    Eliom_client.call_caml_service ~service:Services.Hidden.s3_get key
+    Eliom_client.call_caml_service ~service
 
 }}

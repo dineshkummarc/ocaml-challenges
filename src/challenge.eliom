@@ -41,6 +41,10 @@
               [
                 h3 [ pcdata t.title ]
               ])
+
+
+  let uid t = 
+    t.uid
       
 }}
 
@@ -94,9 +98,6 @@ let of_sdb l =
     facebook_id = fetch_string l "facebook_id" ;
   
 }
-
-let uid t = 
-  t.uid
 
 {client{
 
