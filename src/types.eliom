@@ -1,6 +1,6 @@
 {shared{
-   type s3_path = string
-   type sdb_key = string
+   type s3_path = string deriving (Json)
+   type sdb_key = string deriving (Json)
 
    module DateCommon = 
      struct

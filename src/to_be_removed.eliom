@@ -29,3 +29,12 @@ let _ =
         (Persistency.Challenges.update c1
         >>= fun _ -> Persistency.S3.set s3_solution "dummy_solution" 
         >>= fun _ -> Persistency.S3.set s3_control_code "dummy_control_code")
+
+
+let _ = 
+  (* Generating some activity *)
+  let i = ref 0 in
+  let rec genac () = 
+    incr i ; 
+    Lwt_unix.sleep 2.0 >>= fun _ -> Activity.post (`Someone_viewing ("william", "challenge " ^ (string_of_int !i), "0")) ; genac () in 
+  ignore (genac ()) 

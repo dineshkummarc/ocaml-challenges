@@ -29,3 +29,30 @@ let fetch_string_list l label =
   
 let fetch_date l label = 
   Date.of_string (List.assoc label l)
+
+
+{shared{
+  
+  module RR = 
+    struct 
+      type 'a t = int ref * ('a array)
+      let create p r size i = (ref 0), Array.init size (fun _ -> let e = i () in p e ; e), p, r
+      let push (pos, a, p, r) e =  r a.(!pos) ; a.(!pos) <- e ; p e ; pos := (!pos + 1) mod (Array.length a)  
+      let load p r a = (ref 0), Array.init (Array.length a) (fun i -> let e = a.(i) in p e ; e), p, r
+      let dump (pos, a, p, r) =
+        let i = ref !pos in 
+        let v = ref [] in 
+        while (!i > 0) do 
+          decr i; 
+          v := a.(!i) :: !v ;  
+        done ; 
+        i := Array.length a ; 
+        while (!i > !pos) do 
+          decr i ;
+          v := a.(!i) :: !v ; 
+        done ; 
+        List.rev !v 
+        
+    end
+  
+}}
