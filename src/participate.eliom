@@ -10,6 +10,13 @@ open HTML5.M
   open Misc
   open HTML5.M
   open Eliom_output.Html5 
+
+  let send_solution service challenge_id solver_name solution = 
+    Eliom_client.call_caml_service ~service challenge_id (solver_name, solution) 
+    >>= function
+      | `Invalid_code msg -> alert "Invalid code: %s" msg ; return ()  
+      | `Result mark -> alert "Your code ran smoothly, result is %d" mark ; return () 
+  
   let solution_form (solver_name, solution) = 
     [
       div [
@@ -23,9 +30,12 @@ open HTML5.M
       raw_input ~input_type:`Submit ~value:"Submit" ()
     ]
 
+  let evaluate = Dom_html.handler (fun ev -> alert "submit" ; Js._false)
+  
   (* we can't use event_arrows here as cancel seems to be broken *)
   let init challenge_id submit_solution_btn submit_solution_service = 
-    let form = post_form submit_solution_service solution_form challenge_id in 
+    let form = Eliom_client.Html5.of_element (Eliom_output.Html5_forms.post_form ~no_appl:true ~service:submit_solution_service solution_form challenge_id) in 
+    let _ = Dom_html.addEventListener form Dom_html.Event.submit evaluate Js._false in 
     let canceller = ref None in
     let toggle =
       Dom_html.handler
@@ -34,9 +44,9 @@ open HTML5.M
               None -> alert "none" 
             | Some c -> alert "cancel!" ; Dom_html.removeEventListener c) ; 
           empty submit_solution_btn ; 
-          Dom.appendChild submit_solution_btn (Eliom_client.Html5.of_element form); 
+          Dom.appendChild submit_solution_btn form ; 
           Js._false) in
-    (*    canceller := Some (Event_arrows.run (Event_arrows.clicks submit_solution_btn (Event_arrows.arr toggle)) ()) ; *)
+    (* canceller := Some (Event_arrows.run (Event_arrows.clicks submit_solution_btn (Event_arrows.arr toggle)) ()) ; *)
     canceller := Some (Dom_html.addEventListener submit_solution_btn Dom_html.Event.click toggle Js._false)
  
 }}
