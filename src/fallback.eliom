@@ -7,19 +7,15 @@ let fallback _ _ =
   [
     div [
       p [
-        pcdata "Hey this is not a regestrated service ! Dumb dumb !"
+        pcdata "Hey this is not a registrated service ! Dumb dumb !"
       ]
     ]
   ] >>> Nutshell.home
 
 let _ =
    Appl.register Services.Frontend.challenge_view fallback;
-  
-  (* Appl.register Services.Frontend.challenge_new fallback; *)
-  Appl.register Services.Frontend.challenge_new_post fallback;
 
-  Appl.register Services.Frontend.challenge_verif fallback;
-  Appl.register Services.Frontend.challenge_verif_update fallback;
+  Appl.register Services.Frontend.challenge_confirmation_update fallback;
 
   Appl.register Services.Frontend.delete_challenge fallback;
 

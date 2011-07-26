@@ -11,10 +11,10 @@ module Frontend =
     let challenge_view = service [ "challenge"; "view" ] (suffix (string "id")) ()
 
     let challenge_new = service [ "challenge"; "new" ] unit ()
-    let challenge_new_post = post_service challenge_new (string "author" ** string "title" ** string "description" ** int "difficulty" ** string "hints") () (* add tags + control_code file sending, and maybe create facebook comment *)
+    let challenge_new_post = post_service challenge_new (string "author" ** string "title" ** string "description" ** int "difficulty" ** list "hints" (string "hint_value") ** string "tags" ** string "control_code" ** string "sample_solution") () (* add tags + control_code file sending, and maybe create facebook comment *)
 
-    let challenge_verif = service [ "challenge"; "verification" ] (suffix (string "id")) ()
-    let challenge_verif_update = service [ "challenge"; "update" ] any ()
+    let challenge_confirmation = service [ "challenge"; "confirmation" ] (suffix (string "id")) ()
+    let challenge_confirmation_update = service [ "challenge"; "update" ] any ()
 
     let delete_challenge = service [ "challenge"; "delete" ] (suffix (string "id")) ()
 
@@ -23,7 +23,7 @@ module Frontend =
     let solution_verif = service [ "solution"; "verif"] unit ()
 
     let solution_list = service [ "challenge"; "solution"; "list" ] (suffix (string "challenge_id")) ()
-      
+
 end
 
 module Backend = 
