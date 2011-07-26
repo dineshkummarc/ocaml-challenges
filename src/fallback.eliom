@@ -26,6 +26,5 @@ let _ =
   Appl.register Services.Frontend.solution_verif fallback;
 
   Appl.register Services.Frontend.solution_list fallback ; 
-  Appl.register Services.Frontend.solution_check_fallback fallback ; 
-  Appl.register Services.Frontend.solution_check fallback
+  Appl.register Services.Frontend.solution_check_fallback fallback
   

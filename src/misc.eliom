@@ -64,5 +64,7 @@ let fetch_date l label =
       let c = e##firstChild in
       Js.Opt.iter c (fun c -> ignore (e##removeChild (c)))
     done
-  
+
+       let (><) t f = Js.Opt.bind t f  
+       let (>|<) t f = Js.Opt.iter t f
 }}
