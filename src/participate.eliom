@@ -19,22 +19,12 @@ open HTML5.M
 
   let format_result = function 
     | `Invalid_code msg -> div [ pcdata "Error "; span [ pcdata msg ] ] 
-    | `Success (mark, msg) -> div [ pcdata "Awesome" ; 
+    | `Success (mark, msg) -> div [ pcdata "Awesome " ; 
                                       span [ pcdata "your code passed the test and got result "; pcdata (string_of_int mark) ] ; 
-                                      span (match msg with Some t -> [ pcdata t ] | None -> []) ]
-    | `Failure msg -> div [ pcdata "Ooops"  ; span [ pcdata msg ]]
-    | `Panic msg -> div [ pcdata "Panic" ; span [ pcdata msg ]]                                                                
+                                  ]
+    | `Failure msg -> div [ pcdata "Ooops "  ; span [ pcdata msg ]]
+    | `Panic msg -> div [ pcdata "Panic " ; span [ pcdata msg ]]                                                                
      
-  let send_solution submit_solution_box service challenge_id (solver_name, solution) = 
-    empty submit_solution_box ;
-    Dom.appendChild submit_solution_box (Eliom_client.Html5.of_element evaluation_in_progress) ; 
-    
-    Eliom_client.call_caml_service ~service challenge_id (solver_name, solution) 
-    >>= fun r -> 
-    empty submit_solution_box ; 
-    Dom.appendChild submit_solution_box (Eliom_client.Html5.of_element (format_result r)) ; 
-    return () 
-
   let solution_form (solver_name, solution) = 
     [
       div [
@@ -57,13 +47,39 @@ open HTML5.M
     solution_input >< Dom_html.CoerceTo.textarea >|< (fun e -> v2 := Js.to_string e ## value) ;     
     !v1, !v2
 
+
+  let rec send_solution submit_solution_box service1 service2 challenge_id (solver_name, solution) = 
+    empty submit_solution_box ;
+    Dom.appendChild submit_solution_box (Eliom_client.Html5.of_element evaluation_in_progress) ; 
+    
+    Eliom_client.call_caml_service ~service:service2 challenge_id (solver_name, solution) 
+    >>= fun r -> 
+    empty submit_solution_box ; 
+    Dom.appendChild submit_solution_box (Eliom_client.Html5.of_element (format_result r)) ; 
+    build_solution_box challenge_id submit_solution_box service1 service2  ;
+    return () 
+
+
+  and build_solution_box challenge_id submit_solution_btn submit_solution_service1 submit_solution_service2 = 
+    let submit_handler =
+      Dom_html.handler
+        (fun ev -> 
+          Lwt.ignore_result (send_solution submit_solution_btn submit_solution_service1 submit_solution_service2 challenge_id (evaluate ())) ; 
+          Js._false) in
+    
+    let form = Eliom_client.Html5.of_element (Eliom_output.Html5_forms.post_form ~no_appl:true ~service:submit_solution_service1 solution_form challenge_id) in 
+    
+    let _ = Dom_html.addEventListener form Dom_html.Event.submit submit_handler Js._false in 
+    
+    Dom.appendChild submit_solution_btn form 
+    
   (* we can't use event_arrows here as cancel seems to be broken *)
   let init challenge_id submit_solution_btn submit_solution_service1 submit_solution_service2 = 
 
     let submit_handler =
       Dom_html.handler
         (fun ev -> 
-          Lwt.ignore_result (send_solution submit_solution_btn submit_solution_service2 challenge_id (evaluate ())) ; 
+          Lwt.ignore_result (send_solution submit_solution_btn submit_solution_service1 submit_solution_service2 challenge_id (evaluate ())) ; 
           Js._false) in
 
     let form = Eliom_client.Html5.of_element (Eliom_output.Html5_forms.post_form ~no_appl:true ~service:submit_solution_service1 solution_form challenge_id) in 
@@ -79,7 +95,7 @@ open HTML5.M
               None -> ()
             | Some c -> Dom_html.removeEventListener c) ; 
           empty submit_solution_btn ; 
-          Dom.appendChild submit_solution_btn form ; 
+          build_solution_box challenge_id submit_solution_btn submit_solution_service1 submit_solution_service2  ;
           Js._false) in
     (* canceller := Some (Event_arrows.run (Event_arrows.clicks submit_solution_btn (Event_arrows.arr toggle)) ()) ; *)
     canceller := Some (Dom_html.addEventListener submit_solution_btn Dom_html.Event.click toggle Js._false)
@@ -119,23 +135,22 @@ let handler_check challenge_id (name, source) =
     
     catch 
     (fun () -> 
-      Persistency.S3.get challenge.control_code
-      >>= fun control_code ->
-      Toplevel.run_benchmark control_code source
+      Interpreter.run_benchmark challenge source
     )
-    (fun e -> return (`Invalid_code (Printf.sprintf "Ooops, exception caught: %s" (Printexc.to_string e))))
+    (fun e -> return (`Panic (Printf.sprintf "Ooops, exception caught: %s" (Printexc.to_string e))))
   
   
 
 let handler challenge_id _ =
   Persistency.Challenges.get challenge_id 
   >>= fun challenge -> 
-  
+  Persistency.S3.get challenge.description 
+  >>= fun challenge_description ->
   Activity.post (`Anonymous_viewing (challenge.title, challenge.uid)) ;
   
   let title = div [ h2 [ pcdata challenge.title ]] in 
   let author = div [ pcdata challenge.author ] in
-  let description = div [ pcdata challenge.description ] in 
+  let description = div [ pcdata challenge_description ] in 
   let signature = div [ pcdata challenge.signature ] in 
   let submit_a_solution = unique (div [ pcdata "submit a solution" ]) in
   

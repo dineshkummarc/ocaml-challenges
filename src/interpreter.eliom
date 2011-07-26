@@ -16,7 +16,7 @@ let stubber = ""
 (* handle temporary files ********************************************************************)
 
 let with_temporary f = 
-  let temp = Filename.temp_file "ochall" "tmp" in
+  let temp = Filename.temp_file "ochall" ".ml" in
   finalize
     (fun () -> f temp)
     (fun () -> Lwt_unix.unlink temp)
@@ -44,34 +44,33 @@ let decode json_file =
             | _ -> raise MalformedJson )
     | _ -> raise MalformedJson
 
-let build_benchmarker challenge_id solution = 
-  Persistency.Challenges.get challenge_id 
-  >>= fun challenge -> 
+let run_benchmark challenge solution = 
+  Persistency.S3.get challenge.Challenge.control_code 
+  >>= fun control_code -> 
   with_temporary 
     (fun source -> 
      (* generate source file *)
      lwt oc = Lwt_io.open_file ~mode:Lwt_io.output source in 
      lwt _ = 
        Lwt_list.iter_s 
-         (Lwt_io.write_line oc)  
+         (fun s -> display "%s" s ; Lwt_io.write_line oc s)  
          [ 
            stubber ;
            "module B = struct" ; 
-           challenge.Challenge.control_code ;
+           control_code ;
            "end" ; 
            "module S = struct" ; 
            solution ; 
            "end" ; 
            "let _ = 
              let outfile = Sys.argv.(1) in 
-             let json = 
+             let json : Yojson.Basic.json = 
                 try 
-                  let r = B.benchmark S.main in 
-                  match r with 
-                    | `Success (code, msg) -> `Assoc [ \"kind\", `Int 1 ; \"code\", `String code ; \"msg\", `String msg ]
-                    | `Failure msg -> `Assoc [ \"kind\", `Int 2 ]
-               with e -> `Assoc [ \"kind\", `Int 0 ] in 
-             Yojson.Safe.to_string outfile json "; 
+                  match B.benchmark S.main with 
+                    | `Success (code, msg) -> `Assoc [ \"kind\", `Int 1 ; \"code\", `Int code ; \"msg\", `String msg ]
+                    | `Failure msg -> `Assoc [ \"kind\", `Int 2 ; \"msg\", `String msg ]
+               with e -> `Assoc [ \"kind\", `Int 0; \"msg\", `String (Printexc.to_string e) ] in 
+             Yojson.Basic.to_file outfile json"; 
              
          ] in 
      lwt _ = Lwt_io.close oc in 
@@ -80,7 +79,9 @@ let build_benchmarker challenge_id solution =
        (fun binary -> 
          Lwt_process.exec
            ~timeout 
-           (ocamlfind, [| ocamlfind; "ocamlopt" ; "-package" ; "yojson"; source; "-o"; binary |])
+           ~stdout: `Keep 
+           ~stderr: `Keep
+           (ocamlfind, [| ocamlfind; "ocamlopt" ; "-package" ; "yojson"; source; "-o"; binary; "-linkpkg" |])
          >>= function 
            | Unix.WEXITED 0 -> (* ok, compilation went fine, now we run *)
              (with_temporary 
