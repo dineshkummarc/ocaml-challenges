@@ -121,8 +121,7 @@ let handler_check challenge_id (name, source) =
     
     catch 
     (fun () -> 
-      Toplevel.run_benchmark challenge.control_code source 
-      >>= fun _ -> return (`Invalid_code "not_implemented")
+      Toplevel.run_benchmark challenge.control_code source
     )
     (fun e -> return (`Invalid_code (Printf.sprintf "Ooops, exception caught: %s" (Printexc.to_string e))))
   
@@ -143,6 +142,7 @@ let handler challenge_id _ =
   (* hack to overcome explicit typing ... *)
   let s1 = Services.Frontend.solution_check in 
   let s2 = Services.Frontend.solution_check in
+
   Eliom_services.onload {{ 
     
     init 

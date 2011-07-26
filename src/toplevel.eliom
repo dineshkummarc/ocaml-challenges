@@ -109,9 +109,9 @@ let run_benchmark challenge solution =
 	  >>= (fun s ->
 	    try
     	      match Pcre.extract ~pat:"[0-9]+$" s with
-	        | [|s|] -> Lwt.return (`Score (int_of_string s))
-	        | _     -> Lwt.return (`Failed s)
-            with Not_found -> Lwt.return (`Failed s)
+	        | [|s|] -> Lwt.return (`Result_ok (int_of_string s, "not complete"))
+	        | _     -> Lwt.return (`Invalid_code s)
+            with Not_found -> Lwt.return (`Invalid_code s)
          )     
       )	  
 

@@ -28,7 +28,7 @@ let _ =
       Lwt_main.run 
         (Persistency.Challenges.update c1
         >>= fun _ -> Persistency.S3.set s3_solution "dummy_solution" 
-        >>= fun _ -> Persistency.S3.set s3_control_code "dummy_control_code")
+        >>= fun _ -> Persistency.S3.set s3_control_code "let benchmark f = match f 1 with 2 -> `Success (1, \"Not so bad dude\") | `Failure (\"Invalid code man..\")")
 
 
 let _ = 
