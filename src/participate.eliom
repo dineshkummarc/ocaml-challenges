@@ -19,12 +19,11 @@ open HTML5.M
 
   let format_result = function 
     | `Invalid_code msg -> div [ pcdata "Error "; span [ pcdata msg ] ] 
-    | `Result_ok (mark, msg) -> div [ pcdata "Awesome" ; 
+    | `Success (mark, msg) -> div [ pcdata "Awesome" ; 
                                       span [ pcdata "your code passed the test and got result "; pcdata (string_of_int mark) ] ; 
                                       span (match msg with Some t -> [ pcdata t ] | None -> []) ]
-    | `Result_notok (msg) -> div [ pcdata "Ooops"  ;
-                                   span [ pcdata msg ]]
-                                                                
+    | `Failure msg -> div [ pcdata "Ooops"  ; span [ pcdata msg ]]
+    | `Panic msg -> div [ pcdata "Panic" ; span [ pcdata msg ]]                                                                
      
   let send_solution submit_solution_box service challenge_id (solver_name, solution) = 
     empty submit_solution_box ;
@@ -55,7 +54,7 @@ open HTML5.M
     let v1 = ref "" in 
     let v2 = ref "" in
     solver_name >< Dom_html.CoerceTo.input >|< (fun e -> v1 := Js.to_string e ## value) ; 
-    solution_input >< Dom_html.CoerceTo.input >|< (fun e -> v2 := Js.to_string e ## value) ;     
+    solution_input >< Dom_html.CoerceTo.textarea >|< (fun e -> v2 := Js.to_string e ## value) ;     
     !v1, !v2
 
   (* we can't use event_arrows here as cancel seems to be broken *)
@@ -92,7 +91,6 @@ open HTML5.M
 open Challenge
 
 let handler_check challenge_id (name, source) = 
-  display "GOT A SOLUTION" ; 
   Persistency.Challenges.get challenge_id 
   >>= fun challenge -> 
   
@@ -121,7 +119,9 @@ let handler_check challenge_id (name, source) =
     
     catch 
     (fun () -> 
-      Toplevel.run_benchmark challenge.control_code source
+      Persistency.S3.get challenge.control_code
+      >>= fun control_code ->
+      Toplevel.run_benchmark control_code source
     )
     (fun e -> return (`Invalid_code (Printf.sprintf "Ooops, exception caught: %s" (Printexc.to_string e))))
   

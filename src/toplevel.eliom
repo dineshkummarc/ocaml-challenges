@@ -11,7 +11,7 @@ let (>>=) =  Lwt.(>>=)
 let timeout = float_of_string (Config.get_param "ocaml_timeout")
 let ocaml = Config.get_param "ocaml_path"
 
-let main_function = "main"
+let main_function = "S.main"
 
 (** Extract signature of function that soluton expects *)
 let benchmark_signature code =
@@ -26,9 +26,10 @@ let benchmark_signature code =
 	  >>= (fun () -> Lwt_io.flush p#stdin)
 	  >>= (fun () -> Lwt_io.close p#stdin)
 	  >>= (fun () ->
-            let stream = Lwt_io.read_lines p#stdout in
+          let stream = Lwt_io.read_lines p#stdout in
 	    let rec loop _ =
 	      Lwt_stream.next stream >>= (fun s ->
+              display "line: %s" s ;
 		if Pcre.pmatch ~pat s then
 		  (match Pcre.split ~pat s with
 		    | [_; s] ->
@@ -80,13 +81,15 @@ let run_benchmark challenge solution =
       (ocaml, [| ocaml |])
       (fun p ->
         let lines =
-	  [challenge;
+	  [
+
+          "module B = struct "; 
+          challenge;
+          " end ;;" ; 
+	    "\n";
+	    "module S = struct " ^ solution ^ "end ;;" ;
 	   "\n";
-	   "let benchmark_xxxx = benchmark;;";
-	   "\n";
-	   solution;
-	   "\n";
-	   "benchmark_xxxx " ^ main_function ^ ";;";
+	   "B.benchmark S.main ;;";
 	   "\n";
 	  ] in
 	let instream = Lwt_stream.of_list lines in
@@ -98,8 +101,9 @@ let run_benchmark challenge solution =
 	    let rec loop last_line =
 	      Lwt.catch
 	       (fun () ->
-	          Lwt_stream.next outstream >>= (fun s ->
-	            loop (if String.length s > 10 then s else last_line)
+	         Lwt_stream.next outstream >>= (fun s ->
+                 display "%s" s ; 
+	            loop (if String.length s > 10 then s else last_line) (* hack! *)
 	          )
 	       )
 	       (fun _ -> Lwt.return last_line)

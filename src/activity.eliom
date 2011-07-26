@@ -18,7 +18,6 @@ open Types
   let rr = RR.create (fun _ -> ()) (fun _ -> ()) 6 (fun () -> None)
   let post activity = 
     try 
-      display "> posting some activity" ;
       RR.push rr (Some activity) ; 
       Eliom_bus.write bus activity
     with e -> display "> panic, activity bus error: %s" (Printexc.to_string e) 
