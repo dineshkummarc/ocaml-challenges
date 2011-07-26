@@ -1,5 +1,6 @@
 open Lwt
 open Misc
+open Types
 open HTML5.M
 
 
@@ -63,7 +64,6 @@ open HTML5.M
     let submit_handler =
       Dom_html.handler
         (fun ev -> 
-          let name, solution = evaluate () in
           Lwt.ignore_result (send_solution submit_solution_btn submit_solution_service2 challenge_id (evaluate ())) ; 
           Js._false) in
 
@@ -91,16 +91,41 @@ open HTML5.M
 
 open Challenge
 
-
 let handler_check challenge_id (name, source) = 
+  display "GOT A SOLUTION" ; 
   Persistency.Challenges.get challenge_id 
   >>= fun challenge -> 
-  Activity.post
-    (match name with 
-        "" -> `Anonymous_participating (challenge.title, challenge.uid) 
-      | _ as name -> `Someone_participating (name, challenge.title, challenge.uid)) ; 
-  display "GOT A SOLUTION" ; 
-  return (`Invalid_code "epic fail") 
+  
+  let content_path = Uid.generate () in 
+  Persistency.S3.set content_path source 
+  >>= fun _ -> 
+
+  let solution = 
+    let open Solution in 
+        {
+          uid = Uid.generate () ; 
+          author = name ; 
+          challenge_id ; 
+          date = Date.now () ; 
+          content = content_path ; 
+          status = `Pending ;
+        } in 
+
+    Persistency.Solutions.update solution 
+    >>= fun _ -> 
+    
+    Activity.post
+      (match name with 
+          "" -> `Anonymous_participating (challenge.title, challenge.uid) 
+        | _ as name -> `Someone_participating (name, challenge.title, challenge.uid)) ; 
+    
+    catch 
+    (fun () -> 
+      Toplevel.run_benchmark challenge.control_code source 
+      >>= fun _ -> return (`Invalid_code "not_implemented")
+    )
+    (fun e -> return (`Invalid_code (Printf.sprintf "Ooops, exception caught: %s" (Printexc.to_string e))))
+  
   
 
 let handler challenge_id _ =
