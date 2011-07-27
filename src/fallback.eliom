@@ -13,7 +13,6 @@ let fallback _ _ =
   ] >>> Nutshell.home
 
 let _ =
-   Appl.register Services.Frontend.challenge_view fallback;
 
   Appl.register Services.Frontend.challenge_confirmation_update fallback;
 
@@ -22,4 +21,6 @@ let _ =
   Appl.register Services.Frontend.solution_new fallback;
   Appl.register Services.Frontend.solution_verif fallback;
 
-  Appl.register Services.Frontend.solution_list fallback
+  Appl.register Services.Frontend.solution_list fallback ; 
+  Appl.register Services.Frontend.solution_check_fallback fallback
+  
