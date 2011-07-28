@@ -15,7 +15,11 @@
 
   let new_challenge_form (author, (title, (description, (difficulty, (hints, (tags, (control_code, sample_solution))))))) =
     [
-      int_input ~input_type:`Hidden ~value:0 ~name:difficulty () ;
+      div [
+        span [ pcdata "Difficulty:" ];
+        int_input ~a:([a_id "difficulty_slider"; a_step 1.0; a_input_max 10; a_input_min 1 ]) ~input_type:`Range ~value:5 ~name:difficulty () ;
+        span ~a:([a_id "difficulty_value"]) [ pcdata "5" ];
+      ];
       div [
         label ~a:([a_for "title_challenge"]) [ pcdata "Title:" ];
         string_input ~a:([a_id "title_challenge"; a_required `Required]) ~input_type:`Text ~name:title () ;
@@ -49,7 +53,7 @@
       ];
       raw_input ~input_type:`Submit ~value:"submit" ()
     ]
-      
+
   let init_new container service =
 
     let rec extend_hint_list hint_ul () =
@@ -72,10 +76,11 @@
     let form = post_form ~service new_challenge_form () in
     Dom.appendChild container (Eliom_client.Html5.of_element form);
 
+    (* event *)
     (Dom_html.document ## getElementById (Js.string "hints_challenge"))
-    >|< (fun hint_ul ->
-      (Dom_html.document ## getElementById (Js.string "add_hint"))
-      >|< (fun button -> button ## onclick <- Dom_html.handler (fun _ -> extend_hint_list hint_ul ())));
+      >|< (fun hint_ul ->
+        (Dom_html.document ## getElementById (Js.string "add_hint"))
+          >|< (fun button -> button ## onclick <- Dom_html.handler (fun _ -> extend_hint_list hint_ul ())));
 
     Js.Opt.iter (Dom_html.document ## getElementById (Js.string "tags_challenge")) (
       fun tags ->
@@ -98,7 +103,22 @@
                 Js._true
             )
         )
+      );
+
+    Js.Opt.iter (Dom_html.document ## getElementById (Js.string "difficulty_slider")) (
+    fun diff ->
+      Js.Opt.iter (Dom_html.CoerceTo.input diff) (
+      fun diff_input ->
+        Js.Opt.iter (Dom_html.document ## getElementById (Js.string "difficulty_value")) (
+        fun diff_value ->
+          diff_input ## onchange <- Dom_html.handler (
+          fun _ ->
+            diff_value ## innerHTML <- diff_input ## value;
+            Js._true
+          )
+        )
       )
+    )
 
   let init_confirmation container challenge description sample_solution control_code hint_list =
     let hints_list = 
