@@ -76,6 +76,7 @@ nav li {
 div#container {
     clear: both; 
     padding-top: 30px ;
+    width: 1000px; 
 }
 
 /* footer */
@@ -104,6 +105,36 @@ footer div {
     font-size : 11px ;
     padding-top: 15px; 
     text-align: center; 
+    border-top-style:solid;
+    border-top-width:1px;
+}
+
+
+div.clearall {
+    clear: both ;
+}
+
+div#home_left {
+    float: left ;
+    width: 680px ;
+    overflow: hidden ;
+    padding-right: 20px ;
+    padding-top: 40px ;
+}
+
+div#home_right {
+    float: right; 
+    width: 300px ;
+    overflow: hidden ;
+}
+
+div#home_right img  {
+    width: 300px ;
+}
+
+
+div#out_activity_container {
+    margin-top: 20px ; 
     border-top-style:solid;
     border-top-width:1px;
 }

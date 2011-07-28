@@ -9,19 +9,12 @@ open Eliom_output.Html5
 (* static blocks *************************************************************************)
 
 let description = 
-  div
+  div ~a:[ a_id "puzzles_description" ]
     [ 
       h2 [ pcdata "Take up the gauntlet!" ] ; 
       span [ pcdata "Here are some contributed OCaml puzzle of various difficulties to refresh your ocaml knowledge - or set up a new record!" ]
     ]
     
-let submit_a_challenge = 
-  div 
-    [
-      h2 [ pcdata "Submit a challenge" ] ; 
-      span [ pcdata "Contribute a new puzzle" ]
-    ]
-
 (* client logic **************************************************************************)
 
 {client{
@@ -82,27 +75,38 @@ let home_handler _ _ =
   let cv2 = Services.Frontend.challenge_view in
   
   Eliom_services.onload {{ 
-    
+    alert "calling the onload" ;
+    init_challenges 
+      (Persistency.fetch_from_s3 %Services.Hidden.s3_get) 
+      %cv2
+      (Eliom_client.Html5.of_element %challenges_list) %challenges ; 
+      
     init_activity 
       (Eliom_client.Html5.of_element %activity_container)
       %Activity.bus 
       %cv1
       %activity_max_size 
-      %activity_init ;
-      
-    init_challenges 
-      (Persistency.fetch_from_s3 %Services.Hidden.s3_get) 
-      %cv2
-      (Eliom_client.Html5.of_element %challenges_list) %challenges
-    
+      %activity_init
+          
   }} ; 
 
   Nutshell.home
     [ 
-      description ;
-      submit_a_challenge ; 
-      activity_container ; 
-      challenges_block ; 
+      div ~a:[ a_id "home_left" ] 
+        [
+          description ;
+          challenges_block ;
+        ] ; 
+      div ~a:[ a_id "home_right" ]
+        [
+          img ~src:"/img/caml_race.jpg" ~alt:"caml race" () ; 
+          div ~a:[ a_id "out_activity_container" ] 
+            [
+              h3 [ pcdata "Recent activity" ] ;
+              activity_container ; 
+            ]
+        ] ; 
+      div ~a:[ a_class [ "clearall" ]] [] ; 
     ]
 
 (* service registration ******************************************************************)

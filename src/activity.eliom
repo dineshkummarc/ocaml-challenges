@@ -27,10 +27,13 @@ open Types
 {client{
   open Misc
   open HTML5.M 
-  
+
+  let stream : activity Lwt_stream.t option ref = ref None
+
   let widget container bus view_challenge_service max_size activities = 
-   
-    let rr = RR.create (fun e -> Dom.appendChild container e) (Dom.removeChild container) max_size (fun _ -> Eliom_client.Html5.of_element (div [])) in
+    empty container ; 
+
+    let rr = RR.create (Dom.appendChild container) (Dom.removeChild container) max_size (fun _ -> Eliom_client.Html5.of_element (div [])) in
 
     let render activity = 
       match activity with 
@@ -67,8 +70,11 @@ open Types
       RR.push rr box in
     
     List.iter publish activities ; 
- 
-    iter_for_page publish (Eliom_bus.stream bus)
+    
+    match !stream with 
+        None -> let s = Eliom_bus.stream bus in stream := Some s ; iter_for_page publish s
+      | Some s -> iter_for_page publish s 
+   
 
 }}
 
