@@ -27,6 +27,9 @@ module Frontend =
     let solution_check_fallback = service [ "solution"; "check" ] (suffix (string "challenge_id")) () 
     let solution_check = post_service solution_check_fallback (string "name" ** string "solution") ()
 
+      (* CMS *)
+    let cms = service [ "cms" ] (suffix (string "key")) () 
+         
 end
 
 module Backend = 
