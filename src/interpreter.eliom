@@ -77,27 +77,37 @@ let run_benchmark challenge solution =
      (* compile source *)
      with_temporary 
        (fun binary -> 
-         Lwt_process.exec
-           ~timeout 
-           ~stdout: `Keep 
-           ~stderr: `Keep
-           (ocamlfind, [| ocamlfind; "ocamlopt" ; "-package" ; "yojson"; source; "-o"; binary; "-linkpkg" |])
-         >>= function 
-           | Unix.WEXITED 0 -> (* ok, compilation went fine, now we run *)
-             (with_temporary 
-                (fun json -> 
-                  Lwt_process.exec 
-                    ~timeout 
-                    (binary, [| binary; json |])
-                    >>= function 
+         let ic, oc = Unix.pipe () in (* might be correct here, after all *)
+         finalize 
+           (fun () -> 
+             Lwt_process.exec
+               ~timeout 
+               ~stdout: `Keep 
+               ~stderr: (`FD_move oc)
+               (ocamlfind, [| ocamlfind; "ocamlopt" ; "-package" ; "yojson"; source; "-o"; binary; "-linkpkg" |])
+             >>= function 
+               | Unix.WEXITED 0 -> (* ok, compilation went fine, now we run *)
+                 (with_temporary 
+                    (fun json -> 
+                      Lwt_process.exec 
+                        ~timeout 
+                        (binary, [| binary; json |])
+                      >>= function 
                       | Unix.WEXITED 0 -> (* ok, execution went file, now we grab the return value *)
                         (
                           return ( decode json ) (* <- non cooperative call *)
                         )
                       | _ -> (* oops, execution failed, should never happen *)
                         return (`Panic "sorry, the benchmark couldn't be run")
-                )
-             )
-             
-           | _ -> (* oops, we fail and return the output *) return (`Invalid_code "but I don't know why")))
+                    )
+                 )
+                   
+               | _ -> (* oops, we fail and return the output *) 
+                 let buf = Buffer.create 0 in
+                 let t = String.create 1024 in 
+                 let i = ref 0 in 
+                 while (i := Unix.read ic t 0 1024; !i > 0) do Buffer.add_string buf (String.sub t 0 !i) done ; 
+                 return (`Invalid_code (Buffer.contents buf)))
+
+           (fun () -> Unix.close ic; (* Lwt_io.close (Lwt_io.of_unix_fd ~mode:Lwt_io.output oc) *) return () )))
     
