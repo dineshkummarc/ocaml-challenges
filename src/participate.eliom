@@ -51,15 +51,16 @@ open HTML5.M
 
 
   let rec send_solution submit_solution_box result_box service1 service2 challenge_id (solver_name, solution) = 
-    empty submit_solution_box ;
-    Dom.appendChild submit_solution_box (Eliom_client.Html5.of_element evaluation_in_progress) ; 
+    
+    empty result_box ; 
+    Dom.appendChild result_box (Eliom_client.Html5.of_element evaluation_in_progress) ; 
     
     Eliom_client.call_caml_service ~service:service2 challenge_id (solver_name, solution) 
     >>= fun r -> 
-    empty submit_solution_box ; 
+
     empty result_box ; 
     Dom.appendChild result_box (Eliom_client.Html5.of_element (format_result r)) ; 
-    build_solution_box challenge_id submit_solution_box result_box service1 service2  ;
+  (*  build_solution_box challenge_id submit_solution_box result_box service1 service2  ; *)
     return () 
 
 
