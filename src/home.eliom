@@ -12,7 +12,10 @@ let description =
   div ~a:[ a_id "puzzles_description" ]
     [ 
       h2 [ pcdata "Take up the gauntlet!" ] ; 
-      span [ pcdata "Here are some contributed OCaml puzzle of various difficulties to refresh your ocaml knowledge - or set up a new record!" ]
+      span [ pcdata "Here are some contributed OCaml puzzles of various difficulties to refresh your ocaml knowledge - or set up a new record!" ] ; 
+      br () ; 
+      br () ;
+      span [ pcdata "If you now a good problem for us to twist our brains, don't hesitate to share it!" ]
     ]
     
 (* client logic **************************************************************************)
@@ -59,15 +62,17 @@ let home_handler _ _ =
   let challenges_cardinal = Persistency.Challenges.cardinal () in
   let challenges = Persistency.Challenges.list () in 
   let challenges_list = unique (div []) in 
-  
-  let challenges_next = div [ pcdata "next" ] in 
-  let challenges_before = div [ pcdata "before" ] in
-  
+  (*
+  let challenges_next = div ~a:[ a_id "challenge_nav_right" ] [ ] in 
+  let challenges_before = div ~a:[ a_id "challenge_nav_left" ] [ ] in
+  *)
   let challenges_block = 
-    div [
-      h2 [ pcdata "Current challenges" ; space () ; pcdata (Printf.sprintf "(%d)" challenges_cardinal) ] ;     
-      div [  challenges_next ;  challenges_before ] ;
+    div ~a:[ a_id "challenges_block" ] [
+      h2 [ pcdata "Puzzle box" ; space () ; pcdata (Printf.sprintf "(%d)" challenges_cardinal) ] ;     
       challenges_list ;
+    (*  div ~a:[ a_id "challenge_nav" ] [  challenges_next ;  challenges_before ] ; *)
+      div ~a:[ a_class [ "clearall" ]] [] ; 
+       
     ] in
 
   (* quick and dirty hack to overcome the stupid type annotation issue *)
@@ -75,7 +80,7 @@ let home_handler _ _ =
   let cv2 = Services.Frontend.challenge_view in
   
   Eliom_services.onload {{ 
-    alert "calling the onload" ;
+    
     init_challenges 
       (Persistency.fetch_from_s3 %Services.Hidden.s3_get) 
       %cv2

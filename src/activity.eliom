@@ -54,14 +54,14 @@ open Types
         | `Anonymous_participating (challenge_title, challenge_id) -> 
           Eliom_client.Html5.of_element
             (div [
-              pcdata "Someone has submitted a solution to "; 
+              pcdata "Someone solved "; 
               Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
              ])
         | `Someone_participating (user, challenge_title, challenge_id) -> 
           Eliom_client.Html5.of_element 
             (div [ (* don't use space (), of_element does not know how to translate it *)
               pcdata user ;
-              pcdata " has submitted a solution to " ; 
+              pcdata " solved " ; 
               Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
              ])in
     

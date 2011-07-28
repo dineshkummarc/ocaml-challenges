@@ -9,7 +9,7 @@ open Misc
 
 let home content =
     html
-       (head (title (pcdata "base")) [
+       (head (title (pcdata "OCaml puzzles")) [
          link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/common.css") ();
          script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/runtime.js") ] (pcdata "") ;
          script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/challenges_oclosure.js") ] (pcdata "") ;

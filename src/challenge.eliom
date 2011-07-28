@@ -37,9 +37,18 @@
         
         
   let render_html5 get_s3 t = 
-    return (div
+
+    let caml = img ~src:"/img/thumb_camel.png" ~alt:(Printf.sprintf "difficulty is %d" t.difficulty) () in 
+    let rec gen_camels = function 
+      | 0 -> []
+      | n -> caml :: (gen_camels (n-1)) in
+
+    return (div ~a:[ a_class [ "challenge_short" ]]
               [
-                h3 [ pcdata t.title ]
+                span ~a:[ a_class [ "challenge_short_title" ]] [ pcdata t.title ] ; 
+                span ~a:[ a_class [ "challenge_short_author" ]] [ pcdata "by " ; pcdata t.author ] ; 
+                div ~a:[ a_class [ "challenge_short_difficulty" ]] (gen_camels t.difficulty)  ;
+                div ~a:[ a_class [ "clearall" ]] []; 
               ])
 
 

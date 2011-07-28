@@ -1,9 +1,11 @@
 body {
     font-family: "lucida grande",tahoma,verdana,arial,sans-serif; 
     font-size: 14px; 
-    width: 1000px ;
+    width: 1020px ;
     margin: auto ;
-    
+    padding-left: 10px; 
+    padding-right: 10px; 
+
 }
 
 /*****/
@@ -76,7 +78,7 @@ nav li {
 div#container {
     clear: both; 
     padding-top: 30px ;
-    width: 1000px; 
+    width: 1020px; 
 }
 
 /* footer */
@@ -137,4 +139,75 @@ div#out_activity_container {
     margin-top: 20px ; 
     border-top-style:solid;
     border-top-width:1px;
+}
+
+div#puzzles_description {
+    text-align: justify ;
+}
+
+div#challenges_block {
+    padding-top: 40px; 
+}
+
+
+div#challenges_block h2 {
+    padding-bottom: 10px; 
+}
+
+div#challenge_nav {
+    padding-top: 20px; 
+}
+
+div#challenge_nav_left {
+    width: 50px ;
+    height: 50px ; 
+    background-image: url('/img/arrow-left.jpg') ;
+    background-repeat: no-repeat ; 
+    float: left ;
+}
+
+div#challenge_nav_right {
+    width: 50px ;
+    height: 50px ;
+    background-image: url('/img/arrow-right.jpg') ;
+    background-repeat: no-repeat ; 
+    float: right ;
+    text-align: right ;
+}
+
+
+div.challenge_short {
+    padding-top: 5px; 
+    padding-bottom: 5px ;
+    padding-left: 20px ;
+    border-top-style:solid;
+    border-top-width:1px;
+    border-bottom-style:solid;
+    border-bottom-width:1px;
+
+    
+}
+
+div.challenge_short span.challenge_short_title {
+    font-size: 14px; 
+    font-weight: bold ;
+    padding-right: 30px;
+}
+
+
+div.challenge_short span.challenge_short_author {
+    font-size: 14px; 
+    font-style: italic ;
+}
+
+
+
+div.challenge_short div.challenge_short_difficulty img {
+    width: 20px ;
+}
+
+div.challenge_short div.challenge_short_difficulty {
+    float: right ;
+    padding-right: 20px ;
+
 }
