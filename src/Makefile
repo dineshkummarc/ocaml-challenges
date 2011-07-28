@@ -4,11 +4,11 @@ APP = challenges
 include ../Makefile.config
 
 SERVERFILES := types.eliom misc.eliom activity.eliom config.eliom uid.eliom services.eliom appl.eliom\
-	         nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom\
-	         oClosure_extra.eliom home.eliom backend.eliom to_be_removed.eliom\
-		   interpreter.eliom participate.eliom
+								nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom\
+								oClosure_extra.eliom home.eliom backend.eliom challenge_frontend.eliom to_be_removed.eliom\
+								interpreter.eliom participate.eliom
 
-CLIENTFILES := types.eliom misc.eliom activity.eliom services.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom home.eliom backend.eliom participate.eliom
+CLIENTFILES := types.eliom misc.eliom activity.eliom services.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom home.eliom backend.eliom challenge_frontend.eliom participate.eliom
 
 SERVERLIB := -package eliom.server,aws,yojson
 CLIENTLIB := -package eliom.client,js_of_ocaml,js_of_ocaml.deriving
