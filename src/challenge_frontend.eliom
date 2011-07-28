@@ -75,7 +75,7 @@
         | false -> Js._true
     in
 
-    let form = post_form ~service new_challenge_form () in
+    let form = post_form ~a:[ a_class [ "usual_form" ]] ~service new_challenge_form () in
     Dom.appendChild container (Eliom_client.Html5.of_element form);
 
     (* event *)
@@ -86,7 +86,7 @@
           >|< (fun first_hint -> first_hint ## onkeypress <- Dom_html.handler (key_press_action hint_ul 13));
         (Dom_html.document ## getElementById (Js.string "add_hint"))
           >|< (fun button -> button ## onclick <- Dom_html.handler (fun _ -> extend_hint_list hint_ul)));
-
+    
     Js.Opt.iter (Dom_html.document ## getElementById (Js.string "tags_challenge")) (
       fun tags ->
         tags ## onkeypress <- Dom_html.handler (
@@ -163,8 +163,23 @@ let new_handler _ _ =
     init_new (Eliom_client.Html5.of_element %c) %Services.Frontend.challenge_new_post
   }};
 
-  Nutshell.home [ c ]
-
+  Nutshell.home [ 
+    h2 [ pcdata "Sharing a challenge" ]; 
+    div ~a:[ a_class [ "challenge_sharing_instructions" ]] 
+      [
+        pcdata "Thanks for contributing! Please submit along with your challenge a piece of code that checks solutions and a sample solution" ;
+        br () ; 
+        h3 [ pcdata "Submission guidelines" ] ;
+        ul [
+          li [ pcdata "State a precise description of the problem. The actual signature of the solution will be inferred from the control code" ] ; 
+          li [ pcdata "If the expected solution has type `a -> `b, your control code should have signature: "; br () ; 
+               div ~a:[ a_class [ "centered" ]] [ pcdata "val benchmark : (`a -> `b) -> [ `Success of int * string | `Failure of string ]" ]] ;
+          li [ pcdata "In case of success, the integer returned is a mark, and the higher the better (used to rank solutions)" ] 
+        ]
+      ] ; 
+    h3 
+    c ]
+    
 let build_s3_from_list s3_f generate_uid_f l =
   let l =
     let regexp = Str.regexp "^[ \t]*$" in
@@ -227,13 +242,18 @@ let challenge_confirmation_handler uid _ =
   lwt control_code = Persistency.S3.get challenge.control_code in
   lwt hint_list = build_list_from_s3 Persistency.S3.get challenge.hints in
 
-  let c = unique (div []) in
+  let c = unique (div ~a:[ a_id "new_challenge_form" ] []) in
 
   Eliom_services.onload {{
     init_confirmation %c %challenge %description %sample_solution %control_code %hint_list
   }};
 
-  Nutshell.home [ c ]
+  Nutshell.home [
+    h2 [ pcdata "Sharing a challenge" ]; 
+ 
+    c 
+      
+  ]
 
 let _ =
   Appl.register Services.Frontend.challenge_new new_handler;
