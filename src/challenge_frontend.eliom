@@ -52,34 +52,17 @@
       
   let init_new container service =
 
-    (* let rec add_el_list_handler e =
-       
-         let attach_event () =
-           Js.Opt.iter (Dom_html.document ## getElementById (Js.string "hints_challenge")) (
-           fun hint_ul ->
-             let name = Printf.sprintf "hints.value[%d]" ((hint_ul ## childNodes) ## length) in
-             let li = li [ raw_input ~input_type:`Text ~name:name () ] in
-             let li = Eliom_client.Html5.of_element li in
-             Dom.appendChild hint_ul li;
-             li ## onkeypress <- Dom_html.handler add_el_list_handler
-           )
-         in
-
-         let key_return = 32 in
-
-         (match Js.to_string (e ## _type) with
-           | "click" -> attach_event ()
-           | "keypress" -> if (e ## keyCode) = key_return then attach_event ()
-           | _ -> ());
-         Js._false
-       in *)
-
     let rec extend_hint_list hint_ul () =
       let name = Printf.sprintf "hints.value[%d]" ((hint_ul ## childNodes) ## length) in
-      let li = Eliom_client.Html5.of_li (li [ raw_input ~input_type:`Text ~name:name () ]) in
+      let input = Eliom_client.Html5.of_input (raw_input ~input_type:`Text ~name:name ()) in
+      let li = Eliom_client.Html5.of_li (li []) in
       let key_return = 13 in
+
+      Dom.appendChild li input;
       Dom.appendChild hint_ul li;
-      li ## onkeypress <- Dom_html.handler
+
+      input ## focus ();
+      input ## onkeypress <- Dom_html.handler
         (fun e -> match e ## keyCode = key_return with 
           | true -> extend_hint_list hint_ul ()
           | false -> Js._true);
@@ -159,10 +142,10 @@ let new_handler _ _ =
 
 let build_s3_from_list s3_f generate_uid_f l =
   let l =
-    let regexp = Str.regexp "[ \t]*" in
+    let regexp = Str.regexp "^[ \t]*$" in
     List.filter (
       fun el ->
-        (Str.string_match regexp el 0) != true
+        (Str.string_match regexp el 0) <> true
     ) l
   in
   Lwt_list.map_s (
