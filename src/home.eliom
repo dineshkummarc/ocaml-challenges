@@ -9,19 +9,12 @@ open Eliom_output.Html5
 (* static blocks *************************************************************************)
 
 let description = 
-  div
+  div ~a:[ a_id "puzzles_description" ]
     [ 
       h2 [ pcdata "Take up the gauntlet!" ] ; 
       span [ pcdata "Here are some contributed OCaml puzzle of various difficulties to refresh your ocaml knowledge - or set up a new record!" ]
     ]
     
-let submit_a_challenge = 
-  div 
-    [
-      h2 [ pcdata "Submit a challenge" ] ; 
-      span [ pcdata "Contribute a new puzzle" ]
-    ]
-
 (* client logic **************************************************************************)
 
 {client{
@@ -60,7 +53,7 @@ let submit_a_challenge =
 (* main handler **************************************************************************)
 
 let home_handler _ _ =
-  let activity_container = unique (div []) in 
+  let activity_container = unique (div ~a:[ a_id "activity" ] []) in 
   let activity_max_size = 6 in
   let activity_init = List.fold_left (fun acc -> function None -> acc | Some v -> v :: acc) [] (RR.dump Activity.rr) in
   let challenges_cardinal = Persistency.Challenges.cardinal () in
@@ -99,10 +92,21 @@ let home_handler _ _ =
 
   Nutshell.home
     [ 
-      description ;
-      submit_a_challenge ; 
-      activity_container ; 
-      challenges_block ; 
+      div ~a:[ a_id "home_left" ] 
+        [
+          description ;
+          challenges_block ;
+        ] ; 
+      div ~a:[ a_id "home_right" ]
+        [
+          img ~src:"/img/caml_race.jpg" ~alt:"caml race" () ; 
+          div ~a:[ a_id "out_activity_container" ] 
+            [
+              h3 [ pcdata "Recent activity" ] ;
+              activity_container ; 
+            ]
+        ] ; 
+      div ~a:[ a_class [ "clearall" ]] [] ; 
     ]
 
 (* service registration ******************************************************************)
