@@ -43,7 +43,7 @@
       div [
         span [ pcdata "Some hints" ];
         ul ~a:([a_id "hints_challenge"])  [
-          li [ raw_input ~input_type:`Text ~name:"hints.value[0]" () ];
+          li [ raw_input ~a:([a_id "first_hint_challenge"]) ~input_type:`Text ~name:"hints.value[0]" () ];
         ];
         button ~a:([a_id "add_hint"]) ~button_type:`Button [ span [ pcdata "Add"] ]
       ];
@@ -56,7 +56,7 @@
 
   let init_new container service =
 
-    let rec extend_hint_list hint_ul () =
+    let rec extend_hint_list hint_ul =
       let name = Printf.sprintf "hints.value[%d]" ((hint_ul ## childNodes) ## length) in
       let input = Eliom_client.Html5.of_input (raw_input ~input_type:`Text ~name:name ()) in
       let li = Eliom_client.Html5.of_li (li []) in
@@ -66,21 +66,26 @@
       Dom.appendChild hint_ul li;
 
       input ## focus ();
-      input ## onkeypress <- Dom_html.handler
-        (fun e -> match e ## keyCode = key_return with 
-          | true -> extend_hint_list hint_ul ()
-          | false -> Js._true);
+      input ## onkeypress <- Dom_html.handler (key_press_action hint_ul key_return);
+
       Js._false
+    and key_press_action hint_ul key_return e =
+      match e ## keyCode = key_return with 
+        | true -> extend_hint_list hint_ul
+        | false -> Js._true
     in
 
     let form = post_form ~service new_challenge_form () in
     Dom.appendChild container (Eliom_client.Html5.of_element form);
 
     (* event *)
+
     (Dom_html.document ## getElementById (Js.string "hints_challenge"))
       >|< (fun hint_ul ->
+        (Dom_html.document ## getElementById (Js.string "first_hint_challenge"))
+          >|< (fun first_hint -> first_hint ## onkeypress <- Dom_html.handler (key_press_action hint_ul 13));
         (Dom_html.document ## getElementById (Js.string "add_hint"))
-          >|< (fun button -> button ## onclick <- Dom_html.handler (fun _ -> extend_hint_list hint_ul ())));
+          >|< (fun button -> button ## onclick <- Dom_html.handler (fun _ -> extend_hint_list hint_ul)));
 
     Js.Opt.iter (Dom_html.document ## getElementById (Js.string "tags_challenge")) (
       fun tags ->
