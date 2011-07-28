@@ -177,7 +177,7 @@ let new_handler _ _ =
           li [ pcdata "In case of success, the integer returned is a mark, and the higher the better (used to rank solutions)" ] 
         ]
       ] ; 
-    h3 
+    
     c ]
     
 let build_s3_from_list s3_f generate_uid_f l =
