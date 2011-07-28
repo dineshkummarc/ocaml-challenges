@@ -10,53 +10,49 @@ open Misc
 let home content =
     html
        (head (title (pcdata "base")) [
-
-          link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/common.css") ();
-          (*
-          
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/common.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/button.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/dialog.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/linkbutton.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/menu.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/menuitem.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/menuseparator.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/tab.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/tabbar.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/toolbar.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/colormenubutton.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/palette.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/colorpalette.css") () ;
-          
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/editor/bubble.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/editor/dialog.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/editor/linkdialog.css") () ;
-           link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/closure-library/closure/goog/css/editortoolbar.css") () ;
-          *)
-           script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/runtime.js") ] (pcdata "") ;
-           script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/challenges_oclosure.js") ] (pcdata "") ;
-
-      ])
+         link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/common.css") ();
+         script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/runtime.js") ] (pcdata "") ;
+         script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/challenges_oclosure.js") ] (pcdata "") ;
+       ])
       (body [
-        header [
-          hgroup (h1 [ pcdata "OCaml puzzles" ]) [
-            h4 [ pcdata "handcrafted by the Bay Area OCaml Users Group" ]
-          ];
-          nav [
-            ul [
-              li [
-                a ~service:Services.Frontend.home [ pcdata "home" ] ()
-              ];
-              li [
-                a ~service:Services.Frontend.challenge_new [ pcdata "New challenge" ] ()
+        div ~a:[ a_id "wrap" ] 
+          [ 
+            div [
+              HTML5.M.a ~a: [ a_target "blank" ; a_href (uri_of_string "https://github.com/baoug/ocaml-challenges") ;  a_id "github-link" ] [] ;
+            ] ; 
+            header [
+              hgroup 
+                (h1 [ pcdata "OCaml puzzles" ])
+                [
+                  h4 [ 
+                    span ~a:[ a_id "hdlineL" ] [ pcdata "handcrafted by the" ] ; 
+                span ~a:[ a_id "hdlineR" ] [ pcdata "Bay Area OCaml User Group" ] ; 
+                  ] ; 
+                ];
+              nav [
+                ul [
+                  li [
+                    a ~service:Services.Frontend.home [ pcdata "Home" ] ()
+                  ];
+                  li [
+                    a ~service:Services.Frontend.challenge_new [ pcdata "Contribute a challenge" ] ()
+                  ]; 
+                  li [
+                    a ~service:Services.Frontend.cms [ pcdata "About" ] "About"
+                  ]
+                ]
               ]
-            ]
-          ]
-        ];
-        div ~a:[ a_id "container"] content;
+            ];
+            div ~a:[ a_id "fb-root" ] [] ; 
+            div ~a:[ a_id "container"] content
+              
+
+          ] ; 
         footer [
-          span [ pcdata "This is the Footer" ]
+          div [
+            pcdata "Initiated the 23th of July 2011 during the #0 OCaml Hackathon, in San Francisco, California"
+          ] ; 
         ];
-        div ~a:[ a_id "fb-root" ] []
+        
       ]
     ) >>> return 
