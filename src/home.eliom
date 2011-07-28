@@ -53,7 +53,7 @@ let description =
 (* main handler **************************************************************************)
 
 let home_handler _ _ =
-  let activity_container = unique (div ~a:[ a_id "activity" ] []) in 
+  let activity_container = unique (div []) in 
   let activity_max_size = 6 in
   let activity_init = List.fold_left (fun acc -> function None -> acc | Some v -> v :: acc) [] (RR.dump Activity.rr) in
   let challenges_cardinal = Persistency.Challenges.cardinal () in
@@ -75,19 +75,19 @@ let home_handler _ _ =
   let cv2 = Services.Frontend.challenge_view in
   
   Eliom_services.onload {{ 
-    
+    alert "calling the onload" ;
+    init_challenges 
+      (Persistency.fetch_from_s3 %Services.Hidden.s3_get) 
+      %cv2
+      (Eliom_client.Html5.of_element %challenges_list) %challenges ; 
+      
     init_activity 
       (Eliom_client.Html5.of_element %activity_container)
       %Activity.bus 
       %cv1
       %activity_max_size 
-      %activity_init ;
-      
-    init_challenges 
-      (Persistency.fetch_from_s3 %Services.Hidden.s3_get) 
-      %cv2
-      (Eliom_client.Html5.of_element %challenges_list) %challenges
-    
+      %activity_init
+          
   }} ; 
 
   Nutshell.home
