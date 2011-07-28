@@ -46,19 +46,12 @@ let description =
 
   let init_challenges gets3 service_challenge_view challenges_list challenges = 
     Lwt.ignore_result (render_challenges_list gets3 service_challenge_view challenges_list challenges) 
-
-  (* activity stuff *)
-  let init_activity activity_container bus view_challenge_service max_size = 
-    Activity.widget activity_container bus view_challenge_service max_size 
       
 }}
     
 (* main handler **************************************************************************)
 
 let home_handler _ _ =
-  let activity_container = unique (div []) in 
-  let activity_max_size = 6 in
-  let activity_init = List.fold_left (fun acc -> function None -> acc | Some v -> v :: acc) [] (RR.dump Activity.rr) in
   let challenges_cardinal = Persistency.Challenges.cardinal () in
   let challenges = Persistency.Challenges.list () in 
   let challenges_list = unique (div []) in 
@@ -76,7 +69,7 @@ let home_handler _ _ =
     ] in
 
   (* quick and dirty hack to overcome the stupid type annotation issue *)
-  let cv1 = Services.Frontend.challenge_view in
+ 
   let cv2 = Services.Frontend.challenge_view in
   
   Eliom_services.onload {{ 
@@ -84,35 +77,16 @@ let home_handler _ _ =
     init_challenges 
       (Persistency.fetch_from_s3 %Services.Hidden.s3_get) 
       %cv2
-      (Eliom_client.Html5.of_element %challenges_list) %challenges ; 
-      
-    init_activity 
-      (Eliom_client.Html5.of_element %activity_container)
-      %Activity.bus 
-      %cv1
-      %activity_max_size 
-      %activity_init
-          
+      (Eliom_client.Html5.of_element %challenges_list) %challenges 
+
   }} ; 
 
   Nutshell.home
-    [ 
-      div ~a:[ a_id "home_left" ] 
-        [
-          description ;
-          challenges_block ;
-        ] ; 
-      div ~a:[ a_id "home_right" ]
-        [
-          img ~src:"/img/caml_race.jpg" ~alt:"caml race" () ; 
-          div ~a:[ a_id "out_activity_container" ] 
-            [
-              h3 [ pcdata "Recent activity" ] ;
-              activity_container ; 
-            ]
-        ] ; 
-      div ~a:[ a_class [ "clearall" ]] [] ; 
-    ]
+   
+    [
+      description ;
+      challenges_block ;
+    ] 
 
 (* service registration ******************************************************************)
 
