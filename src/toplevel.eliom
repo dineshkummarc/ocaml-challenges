@@ -16,7 +16,7 @@ let main_function = "S.main"
 (** Extract signature of function that soluton expects *)
 let benchmark_signature code =
     let pat = "val benchmark : " in
-    let stop  = String.length ") -> int = <fun>" in
+    let stop  = String.length ") -> [> `Failure of string | `Success of int * string ] = <fun>" in
 
     Lwt_process.with_process_full
       ~timeout
@@ -119,11 +119,13 @@ let run_benchmark challenge solution =
          )     
       )	  
 
-(* debug code
-let challenge = "let benchmark f = if f 1 = 2 then 10 else 0;;"
+
+let challenge = "let benchmark f = if f 1 = 2 then `Success (10, \"epic win\") else `Failure \"epic fail\";;"
 let solution  = "let main i = i + 1;;";;
 
 let _ = Lwt_main.run (benchmark_signature challenge >>= (fun s -> display "signature -> %s" s; Lwt.return ()));;
+
+(*
 let _= Lwt_main.run (run_benchmark challenge solution >>= (function
     | `Score i  ->  display "done --> %d" i; Lwt.return ()
     | `Failed s ->  display "error --> %s" s; Lwt.return ()

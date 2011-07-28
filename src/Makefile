@@ -28,7 +28,7 @@ $(STATICDIR)/$(APP)_req.js: $(STATICDIR)/$(APP).js
 $(STATICDIR)/$(APP)_oclosure.js: $(STATICDIR)/$(APP).js
 	${OCLOSURE_REQ} ../$^
 
-pack: $(STATICDIR)/$(APP).js $(STATICDIR)/$(APP)_oclosure.js 
+pack: $(STATICDIR)/$(APP).js # $(STATICDIR)/$(APP)_oclosure.js 
 
 install:
 	$(OCAMLFIND) install frontend META _build/server/frontend.cmo _build/server/frontend.cmi
