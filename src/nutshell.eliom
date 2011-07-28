@@ -78,6 +78,13 @@ let home content =
                     [
                       h3 [ pcdata "Recent activity" ] ;
                       activity_container ; 
+                    ] ; 
+                  div ~a:[ a_id "contribute" ] 
+                    [
+                      h3 [ pcdata "You want to contribute?" ] ;
+                      pcdata "This website was written to demonstrate the capabilities of OCaml/Ocsigen 2.0. "; 
+                      br () ; br () ; 
+                      pcdata "Many features are still lacking and you can freely hack in the code: join us on "
                     ]
                 ] ; 
               div ~a:[ a_class [ "clearall" ]] [] ; 

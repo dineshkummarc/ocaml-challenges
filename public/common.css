@@ -15,6 +15,11 @@ a, a:visited, a:active, a:focus {
     color: #000000; 
 }
 
+
+textarea {
+    resize: none ; 
+}
+
 /*****/
 
 /*****/
@@ -78,7 +83,8 @@ nav li {
 div#container {
     clear: both; 
     padding-top: 30px ;
-    width: 1020px; 
+    width: 1020px;
+    
 }
 
 /* footer */
@@ -89,13 +95,14 @@ div#wrap {
 
 div#container{
     overflow: auto; 
-    padding-bottom: 50px;
+    padding-bottom: 80px;
 } 
 
 footer {
+    padding-top: 30px; 
     position: relative;
-    margin-top: -50px;
-    height: 50px;
+    margin-top: -80px;
+    height: 80px;
     clear:both;
 } 
 
@@ -140,6 +147,16 @@ div#out_activity_container {
     border-top-style:solid;
     border-top-width:1px;
 }
+
+
+div#contribute {
+    margin-top: 20px ; 
+    border-top-style:solid;
+    border-top-width:1px;
+    text-align: justify ;
+}
+
+/* home *********************************************************************************/
 
 div#puzzles_description {
     text-align: justify ;
@@ -209,5 +226,92 @@ div.challenge_short div.challenge_short_difficulty img {
 div.challenge_short div.challenge_short_difficulty {
     float: right ;
     padding-right: 20px ;
+
+}
+
+
+
+/* challenge description *********************************************************************/
+
+div#challenge_descr span.challenge_descr_title {
+    font-size: 24px; 
+    font-weight : bold ; 
+}
+
+div#challenge_descr span.challenge_descr_author {
+    margin-left: 20px ; 
+    font-style: italic; 
+}
+
+div#challenge_descr_description {
+    padding-top: 30px; 
+    text-align: justify; 
+}
+
+div#challenge_descr_signature {
+    padding-top: 30px; 
+}
+
+div#solution_box {
+    margin-top: 50px ;
+    padding-top: 20px ;
+    border-top-style:solid;
+    border-top-width:1px;
+}
+
+
+div#solution_box form {
+    width: 650px ;
+    margin: auto ; 
+}
+
+
+div#solution_box form div {
+ clear: both; 
+}
+div#solution_box form div label {
+    float:left ;
+}
+
+div#solution_box form div input {
+    float:right ;
+    margin-bottom: 10px; 
+    -webkit-appearance: textfield;
+    padding: 1px;
+    background-color: white;
+    border: 2px inset;
+    -webkit-rtl-ordering: logical;
+    -webkit-user-select: text;
+    cursor: auto;
+    font-size: 14px ;
+}
+
+div#solution_box form div textarea {
+    float:right ;
+    margin-bottom: 20px; 
+    font-size: 14px ;
+    width: 540px ; 
+}
+
+div#solution_box form input[type="submit"] {
+    text-align: center ;
+    width: 100px ;
+    margin-left: 300px; 
+    font-size: 20px; 
+}
+
+div#result div.result_error {
+    font-size : 14px; 
+    color: red; 
+    margin:auto; 
+    text-align:center; 
+}
+
+
+div#result div.result_success {
+    font-size : 16px; 
+    color: green; 
+    margin:auto; 
+    text-align:center; 
 
 }
