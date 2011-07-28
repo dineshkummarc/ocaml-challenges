@@ -146,8 +146,9 @@ let handler challenge_id _ =
   >>= fun challenge -> 
   Persistency.S3.get challenge.description 
   >>= fun challenge_description ->
-  Activity.post (`Anonymous_viewing (challenge.title, challenge.uid)) ;
-  
+
+  Activity.post (`Anonymous_viewing (challenge.title, challenge.uid)); 
+ 
   let title = div [ h2 [ pcdata challenge.title ]] in 
   let author = div [ pcdata challenge.author ] in
   let description = div [ pcdata challenge_description ] in 

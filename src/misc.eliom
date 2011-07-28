@@ -67,4 +67,28 @@ let fetch_date l label =
 
        let (><) t f = Js.Opt.bind t f  
        let (>|<) t f = Js.Opt.iter t f
+
+(* Cancellable iter *)
+
+open Lwt 
+
+let cancellable_iter active f s =
+  let rec loop () =
+    Lwt_stream.get s >>= function
+      | None -> return ()
+      | Some x ->
+        match !active with 
+            false -> return () 
+          | true -> let () = f x in
+            loop ()
+      
+  in
+  loop ()
+    
+let iter_for_page f s = 
+  let active = ref true in 
+  ignore (cancellable_iter active f s) ; 
+  Eliom_client.on_unload (fun () -> active := false) 
+
+
 }}

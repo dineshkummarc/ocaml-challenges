@@ -37,7 +37,7 @@ open Types
         | `Anonymous_viewing (challenge_title, challenge_id) -> 
           Eliom_client.Html5.of_element
             (div [
-              pcdata "Someone is viewing" ; space () ; 
+              pcdata "Someone is viewing " ; 
               Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
              ])
         | `Someone_viewing (user, challenge_title, challenge_id) -> 
@@ -51,15 +51,14 @@ open Types
         | `Anonymous_participating (challenge_title, challenge_id) -> 
           Eliom_client.Html5.of_element
             (div [
-              pcdata "Someone has submitted a solution to" ; space () ; 
+              pcdata "Someone has submitted a solution to "; 
               Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
              ])
         | `Someone_participating (user, challenge_title, challenge_id) -> 
           Eliom_client.Html5.of_element 
             (div [ (* don't use space (), of_element does not know how to translate it *)
               pcdata user ;
-              pcdata " " ; 
-              pcdata "has submitted a solution to " ; 
+              pcdata " has submitted a solution to " ; 
               Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
              ])in
     
@@ -69,7 +68,7 @@ open Types
     
     List.iter publish activities ; 
  
-    ignore (Lwt_stream.iter publish (Eliom_bus.stream bus))       
+    iter_for_page publish (Eliom_bus.stream bus)
 
 }}
 
