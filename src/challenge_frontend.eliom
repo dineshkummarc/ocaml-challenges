@@ -15,43 +15,54 @@
 
   let new_challenge_form (author, (title, (description, (difficulty, (hints, (tags, (control_code, sample_solution))))))) =
     [
-      div [
-        span [ pcdata "Difficulty:" ];
-        int_input ~a:([a_id "difficulty_slider"; a_step 1.0; a_input_max 10; a_input_min 1 ]) ~input_type:`Range ~value:5 ~name:difficulty () ;
-        span ~a:([a_id "difficulty_value"]) [ pcdata "5" ];
-      ];
-      div [
-        label ~a:([a_for "title_challenge"]) [ pcdata "Title:" ];
-        string_input ~a:([a_id "title_challenge"; a_required `Required]) ~input_type:`Text ~name:title () ;
-      ];
-      div [
-        label ~a:([a_for "author_challenge"]) [ pcdata "Author:" ];
-        string_input ~a:([a_id "author_challenge"; a_required `Required]) ~input_type:`Text ~name:author () ;
-      ];
-      div [
-        label ~a:([a_for "desc_challenge"]) [ pcdata "Describe your problem:" ];
-        textarea ~a:([ a_id "desc_challenge"; a_required `Required]) ~rows:10 ~cols:50 ~name:description () ;
-      ];
-      div [
-        label ~a:([a_for "control_code_challenge"]) [ pcdata "Controle code" ];
-        textarea ~a:([ a_id "control_code_challenge"; a_required `Required ]) ~rows:10 ~cols:50 ~name:control_code () ;
-      ];
-      div [
-        label ~a:([a_for "solution_sample_code"]) [ pcdata "solution_sample" ];
-        textarea ~a:([a_id "solution_sample_code"; a_required `Required ]) ~rows:10 ~cols:50 ~name:sample_solution () ;
-      ];
-      div [
-        span [ pcdata "Some hints" ];
-        ul ~a:([a_id "hints_challenge"])  [
-          li [ raw_input ~a:([a_id "first_hint_challenge"]) ~input_type:`Text ~name:"hints.value[0]" () ];
-        ];
-        button ~a:([a_id "add_hint"]) ~button_type:`Button [ span [ pcdata "Add"] ]
-      ];
-      div [
-        label ~a:([a_for "tags_challenge"]) [ pcdata "tags" ] ;
-        string_input ~a:([ a_id "tags_challenge" ]) ~input_type:`Text ~name:tags () ;
-      ];
-      raw_input ~input_type:`Submit ~value:"submit" ()
+      table ~columns:[ (colgroup [
+          col ~a:([a_style "text-align: center"; a_span 3]) ();
+        ])] (
+          tr [
+            td [ label ~a:([a_for "title_challenge"]) [ pcdata "Title" ]; ];
+            td ~a:([a_colspan 2]) [ string_input ~a:([a_id "title_challenge"; a_required `Required]) ~input_type:`Text ~name:title () ; ]
+          ];
+        ) [
+          tr [
+            td [ label ~a:([a_for "author_challenge"]) [ pcdata "Author" ]; ];
+            td ~a:([a_colspan 2]) [ string_input ~a:([a_id "author_challenge"; a_required `Required]) ~input_type:`Text ~name:author () ; ];
+          ];
+          tr [
+            td [ 
+                span [ pcdata "Difficulty = " ];
+                span ~a:([a_id "difficulty_value"]) [ pcdata "5" ];
+              ];
+            td ~a:([a_colspan 2]) [ int_input ~a:([a_id "difficulty_slider"; a_step 1.0; a_input_max 10; a_input_min 1 ]) ~input_type:`Range ~value:5 ~name:difficulty (); ];
+          ];
+          tr [
+            td [ label ~a:([a_for "desc_challenge"]) [ pcdata "Describe your problem" ]; ];
+            td ~a:([a_colspan 2]) [ textarea ~a:([ a_id "desc_challenge"; a_required `Required]) ~rows:10 ~cols:50 ~name:description () ; ];
+          ];
+          tr [
+            td [ label ~a:([a_for "control_code_challenge"]) [ pcdata "Controle code" ]; ];
+            td ~a:([a_colspan 2]) [ textarea ~a:([ a_id "control_code_challenge"; a_required `Required ]) ~rows:25 ~cols:50 ~name:control_code () ; ];
+          ];
+          tr [
+            td [ label ~a:([a_for "solution_sample_code"]) [ pcdata "Solution sample" ]; ];
+            td ~a:([a_colspan 2]) [ textarea ~a:([a_id "solution_sample_code"; a_required `Required ]) ~rows:25 ~cols:50 ~name:sample_solution () ; ];
+          ];
+          tr [
+            td ~a:([a_style "vertical-align:top"]) [ span [ pcdata "Some hints" ]; ];
+            td ~a:([a_style "width: 400px"]) [ 
+                ul ~a:([a_id "hints_challenge"])  [
+                  li [ raw_input ~a:([a_id "first_hint_challenge"]) ~input_type:`Text ~name:"hints.value[0]" () ];
+                ];
+              ];
+            td ~a:([a_style "vertical-align:bottom"]) [ button ~a:([a_id "add_hint"]) ~button_type:`Button [ span [ pcdata "Add"] ] ];
+          ];
+          tr [
+            td [ label ~a:([a_for "tags_challenge"]) [ pcdata "tags" ] ; ];
+            td ~a:([a_colspan 2]) [ string_input ~a:([ a_id "tags_challenge" ]) ~input_type:`Text ~name:tags () ; ];
+          ];
+          tr [
+            td ~a:([a_colspan 3; a_style "text-align:right"]) [ button ~button_type:`Submit [ span [ pcdata "Submit" ] ] ]
+          ]
+        ]
     ]
 
   let init_new container service =
@@ -75,7 +86,7 @@
         | false -> Js._true
     in
 
-    let form = post_form ~a:[ a_class [ "usual_form" ]] ~service new_challenge_form () in
+    let form = post_form ~a:[ a_id "create_challenge_form" ] ~service new_challenge_form () in
     Dom.appendChild container (Eliom_client.Html5.of_element form);
 
     (* event *)
@@ -176,8 +187,8 @@ let new_handler _ _ =
                div ~a:[ a_class [ "centered" ]] [ pcdata "val benchmark : (`a -> `b) -> [ `Success of int * string | `Failure of string ]" ]] ;
           li [ pcdata "In case of success, the integer returned is a mark, and the higher the better (used to rank solutions)" ] 
         ]
-      ] ; 
-    
+      ] ;
+
     c ]
     
 let build_s3_from_list s3_f generate_uid_f l =
@@ -249,10 +260,8 @@ let challenge_confirmation_handler uid _ =
   }};
 
   Nutshell.home [
-    h2 [ pcdata "Sharing a challenge" ]; 
- 
-    c 
-      
+    h2 [ pcdata "Sharing a challenge" ];
+    c
   ]
 
 let _ =

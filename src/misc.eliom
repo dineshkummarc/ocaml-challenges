@@ -88,7 +88,6 @@ let cancellable_iter active f s =
 let iter_for_page f s = 
   let active = ref true in 
   ignore (cancellable_iter active f s) ; 
-  Eliom_client.on_unload (fun () -> active := false) 
-
+  Eliom_client.on_unload (fun () -> active := false)
 
 }}

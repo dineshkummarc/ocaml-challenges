@@ -229,7 +229,37 @@ div.challenge_short div.challenge_short_difficulty {
 
 }
 
+/* challenge creation ************************************************************************/
 
+form#create_challenge_form input, form#create_challenge_form textarea {
+  width: 370px;
+  border-radius: 10px;
+  margin-bottom: 7px;
+}
+
+form#create_challenge_form textarea {
+  border-style: ridge;
+  border-width: 2px;
+}
+
+form#create_challenge_form table {
+  width: 100%;
+}
+
+form#create_challenge_form input[type="submit"] {
+  width: 50px;
+}
+
+ul#hints_challenge {
+  list-style-type : decimal;
+  list-style-position : inside;
+  padding: 0;
+  margin-bottom: 0px;
+}
+
+ul#hints_challenge input {
+  width: 350px;
+}
 
 /* challenge description *********************************************************************/
 
