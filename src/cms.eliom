@@ -17,7 +17,6 @@ let get key =
   Persistency.S3.get key 
   >>= fun s -> 
   Wiki_syntax.xml_of_wiki Wiki_syntax.wikicreole_parser dummy_box_info s 
-  >>= fun r -> return r
 
 open HTML5.M
 
@@ -27,3 +26,24 @@ let handler_get key _ =
 
 let _ = 
   Appl.register Services.Frontend.cms handler_get
+
+
+(* backend logic **********************************************************************)
+
+{shared{
+  
+  open Lwt
+  open HTML5.M
+
+  let __name__ = "cms" 
+  
+  type t = string
+  let render_html5 _ markup = 
+    return 
+      (div 
+         [
+           pcdata markup 
+         ])
+      
+}}
+

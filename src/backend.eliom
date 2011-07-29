@@ -9,7 +9,8 @@ open Eliom_output.Html5
 {client{
   
   open HTML5.M 
-  
+  open Types 
+
   module type ELT = 
     sig 
       type t 
@@ -43,7 +44,7 @@ open Eliom_output.Html5
 
     module VChallenges = Viz (Challenge)
     module VSolutions = Viz (Solution)
-
+    module VCms = Viz (Cms)
 }}
 
 module type ELT = 
