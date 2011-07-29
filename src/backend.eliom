@@ -4,6 +4,8 @@ open Eliom_pervasives
 open HTML5.M
 open Eliom_output.Html5
 
+open Types
+
 (* generic visualization ****************************************************************)
     
 {client{
@@ -49,9 +51,14 @@ open Eliom_output.Html5
 
 module type ELT = 
   sig 
-    type t 
+    type key = sdb_key
+    type diff deriving (Json) 
+    type t
+      
     val __name__ : string
     val list : unit -> t list
+      
+    val update_diff : key -> diff -> bool Lwt.t
   end
 
 module Viz (E : ELT) = 
@@ -63,11 +70,20 @@ module Viz (E : ELT) =
     (* Services that send the list of elements ******************************************)
     
     let service_get = service [ "get_elements" ; E.__name__ ] unit () 
+    let service_update_fallback = service [ "update_element" ; E.__name__ ] (string "key") () 
+    let service_update = post_service service_update_fallback (caml "value" (Json.t< E.diff> )) () 
             
     let handler_get () () = 
       return (E.list ())
 
-    let _ = Eliom_output.Caml.register service_get handler_get 
+    let handler_update key value = 
+      E.update_diff key value 
+
+    let handler_fallback _ _ = Nutshell.home [ h2 [ pcdata "You're lost - or I am!" ]]
+    let _ = 
+      Eliom_output.Caml.register service_get handler_get ; 
+      Appl.register service_update_fallback handler_fallback ;
+      Eliom_output.Caml.register service_update handler_update 
 
     (* Some HTML5 code ******************************************************************)
       

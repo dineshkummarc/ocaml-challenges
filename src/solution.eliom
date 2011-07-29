@@ -9,7 +9,7 @@
 
   let __name__ = "solutions" 
 
-  type status = [ `Score of int | `Failed of (string * string) | `Pending ]
+  type status = [ `Score of int | `Failed of (string * string) | `Pending ] deriving (Json)
            
   type t = 
       {
@@ -22,7 +22,7 @@
         content : s3_path ;
         
         status : status ; 
-      }
+      } deriving (Json)
 
 
   let render_html5 s3_service t = 

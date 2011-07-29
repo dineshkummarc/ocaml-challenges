@@ -44,17 +44,24 @@ let _ =
   
   open Lwt
   open HTML5.M
+  open Types 
 
   let __name__ = "cmspages" 
   
+  type key = sdb_key 
+
   type t = string * (HTML5_types.flow5 Eliom_pervasives.HTML5.M.elt list)
 
-  let render_html5 _ (code, _ ) = 
+  type diff = string deriving (Json)
+
+  let render_html5 _ (code, markup) = 
     return 
       (div 
          [
-           pcdata code
+           h3 [ pcdata code ] ; 
+           div markup
          ])
+
      
 }}
 
@@ -62,5 +69,9 @@ let _ =
 
   let list () = 
     cache # list ()
+
+  let update_diff key markup = 
+    (* Persistency.S3.store key markup >>= fun _ -> *)
+    set key markup >>= fun _ -> return true
 
 }}
