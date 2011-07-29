@@ -7,11 +7,9 @@ open Misc
 
 {client{
 
-
   (* activity stuff *)
   let init_activity activity_container bus view_challenge_service max_size = 
     Activity.widget activity_container bus view_challenge_service max_size 
-
 
 }}
 
@@ -90,8 +88,6 @@ let home content =
               div ~a:[ a_class [ "clearall" ]] [] ; 
               
             ]
-              
-
           ] ; 
         footer [
           div [

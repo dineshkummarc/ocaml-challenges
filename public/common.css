@@ -261,6 +261,12 @@ ul#hints_challenge input {
   width: 350px;
 }
 
+/* challenge overview ***********************************************************************/
+
+div#challenge_overview table td {
+  padding-bottom: 7px;
+}
+
 /* challenge description *********************************************************************/
 
 div#challenge_descr span.challenge_descr_title {

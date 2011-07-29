@@ -30,6 +30,28 @@ let fetch_string_list l label =
 let fetch_date l label = 
   Date.of_string (List.assoc label l)
 
+let filter_empty_string_from_list l =
+  let regexp = Str.regexp "^[ \t]*$" in
+  List.filter (
+    fun (el) ->
+      (Str.string_match regexp el 0) <> true
+  ) l
+  
+(* S3 list fonction ****)
+
+let build_s3_from_list s3_f generate_uid_f l =
+  Lwt_list.map_s (
+    fun el ->
+      let uid = generate_uid_f () in
+      s3_f uid el;
+      Lwt.return uid
+  ) l
+
+let build_list_from_s3 s3_f l =
+  Lwt_list.map_s (fun el ->
+    s3_f el
+  ) l
+
 
 {shared{
   
