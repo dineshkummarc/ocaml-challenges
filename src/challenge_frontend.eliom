@@ -213,15 +213,22 @@ let build_list_from_s3 s3_f l =
 
 let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags, (control_code, sample_solution))))))) =
 
-  let regexp = Str.regexp "[; \t]+" in
-  let tags_list = Str.split regexp tags in
-
+  Interpreter.check_and_infer_signature control_code sample_solution
+  >>= function 
+    | `Invalid_code message -> failwith message 
+    | `Panic message -> failwith message
+    | `Signature signature -> 
+      
+      let regexp = Str.regexp "[; \t]+" in
+      let tags_list = Str.split regexp tags in
+      
   lwt s3_hints_list = build_s3_from_list Persistency.S3.set Uid.generate hints in
 
-  let s3_description = Uid.generate () in
+let s3_description = Uid.generate () in
   let s3_control_code = Uid.generate () in
   let s3_sample_solution = Uid.generate () in
   let uid = Uid.generate () in
+    
   let challenge = {
     uid = uid;
     author = author ;
@@ -229,7 +236,7 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
     submission_date = Date.now () ;
     title = title ;
     description = s3_description ;
-    signature = "";
+    signature ;
     difficulty = difficulty ;
     hints = s3_hints_list ;
     tags = tags_list ;
@@ -243,7 +250,7 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
   Persistency.S3.set s3_control_code control_code >>= fun _ ->
   Persistency.S3.set s3_sample_solution sample_solution >>= fun _ ->
   Persistency.Challenges.update challenge >>= fun _ ->
-     Lwt.return (Eliom_services.preapply ~service:Services.Frontend.challenge_confirmation uid)
+  Lwt.return (Eliom_services.preapply ~service:Services.Frontend.challenge_confirmation uid)
 
 let challenge_confirmation_handler uid _ =
   Persistency.Challenges.get uid >>= fun challenge ->

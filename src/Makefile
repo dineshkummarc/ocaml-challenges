@@ -5,12 +5,12 @@ include ../Makefile.config
 
 SERVERFILES := types.eliom misc.eliom activity.eliom config.eliom uid.eliom services.eliom appl.eliom\
 								nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom\
-								oClosure_extra.eliom home.eliom backend.eliom challenge_frontend.eliom to_be_removed.eliom\
-								interpreter.eliom participate.eliom
+								oClosure_extra.eliom home.eliom backend.eliom to_be_removed.eliom\
+								interpreter.eliom participate.eliom challenge_frontend.eliom
 
 CLIENTFILES := types.eliom misc.eliom activity.eliom services.eliom nutshell.eliom solution.eliom challenge.eliom persistency.eliom fallback.eliom home.eliom backend.eliom challenge_frontend.eliom participate.eliom
 
-SERVERLIB := -package eliom.server,aws,yojson
+SERVERLIB := -package eliom.server,aws,yojson,ulex
 CLIENTLIB := -package eliom.client,js_of_ocaml,js_of_ocaml.deriving
 
 INCLUDES := 
