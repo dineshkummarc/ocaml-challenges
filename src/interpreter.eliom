@@ -148,7 +148,7 @@ let let_position file ident =
 let read_annot source file (l1, c1) (l2, c2)  = 
   (* "/tmp/test.ml" 1 0 4 "/tmp/test.ml" 1 0 13 *)
   display "> looking for annotation on %d %d %d %d" l1 c1 l2 c2 ; 
-  let hl = Printf.sprintf "\"%s\" %d \([ 0-9 ]+\) \([ 0-9 ]+\) \"%s\" %d \([ 0-9 ]+\) \([ 0-9 ]+\)" (Str.quote source) l1 (Str.quote source) l2 in 
+  let hl = Printf.sprintf "\"%s\" %d \\([ 0-9 ]+\\) \\([ 0-9 ]+\\) \"%s\" %d \\([ 0-9 ]+\\) \\([ 0-9 ]+\\)" (Str.quote source) l1 (Str.quote source) l2 in 
   let rxp = Str.regexp hl in
   Lwt_io.open_file ~mode:Lwt_io.input file
   >>= fun ic -> 
