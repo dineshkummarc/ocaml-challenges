@@ -22,7 +22,8 @@ let home content =
   let activity_container = unique (div []) in 
   let activity_max_size = 6 in
   let activity_init = List.fold_left (fun acc -> function None -> acc | Some v -> v :: acc) [] (RR.dump Activity.rr) in
- 
+
+lwt contribute = Cms.get "contribute" in
   Eliom_services.onload 
   {{
       init_activity 
@@ -80,12 +81,9 @@ let home content =
                       activity_container ; 
                     ] ; 
                   div ~a:[ a_id "contribute" ] 
-                    [
-                      h3 [ pcdata "You want to contribute?" ] ;
-                      pcdata "This website was written to demonstrate the capabilities of OCaml/Ocsigen 2.0. "; 
-                      br () ; br () ; 
-                      pcdata "Many features are still lacking and you can freely hack in the code: join us on "
-                    ]
+                   contribute
+                     
+                    
                 ] ; 
               div ~a:[ a_class [ "clearall" ]] [] ; 
               

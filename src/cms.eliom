@@ -32,13 +32,8 @@ let set key value =
   Wiki_syntax.xml_of_wiki Wiki_syntax.wikicreole_parser dummy_box_info value 
   >>= fun block -> cache # add key (key, value, block) ; return ()
   
-let handler_get key _ = 
-  cache # find key 
-  >>= fun (_, _, block) -> Nutshell.home block
-
-let _ = 
-  Appl.register Services.Frontend.cms handler_get
-
+let get key = 
+  cache # find key >>= fun (_, _, block) -> return block
 
 (* backend logic **********************************************************************)
 
