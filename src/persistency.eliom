@@ -38,8 +38,7 @@ module S3 =
           
     let store objekt body = 
       S3.put_object creds !default_region ~bucket ~objekt ~body:(`String body) 
-        
-        
+                
     module S3_cache = Ocsigen_cache.Make (struct type key = string type value = string end)
       
     let s3_cache = new S3_cache.cache load (int_of_string (Config.get_param "cache_size"))
@@ -57,7 +56,7 @@ module S3 =
 
 module type LS = 
   sig
-    type t 
+    type t deriving (Json)
 
     val cache_size : int
     val domain : string 
@@ -74,7 +73,9 @@ module LFactory (L : LS) =
     
     exception Error
 
+    type key = sdb_key
     type t = L.t 
+    type diff = L.t deriving (Json)
 
     let __name__ = L.__name__
 
@@ -108,6 +109,9 @@ module LFactory (L : LS) =
     let list () = 
       cache # list ()
 
+    let update_diff key _ = 
+      failwith "not implemented" 
+
     let cardinal () = 
       cache # size 
 
@@ -136,7 +140,7 @@ module LFactory (L : LS) =
           Lwt_unix.sleep 5.0 >>= init ~token
 
             
-  (* to be removed *)
+ (* to be removed *)
 
     let create_domain () = 
       SDB.create_domain creds L.domain >>= fun _ -> return ()

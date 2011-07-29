@@ -33,7 +33,7 @@
         submitted_solutions : sdb_key list ;
 
         facebook_id : string ;
-      }
+      } deriving (Json)
         
         
   let render_html5 get_s3 t = 

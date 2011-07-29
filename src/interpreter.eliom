@@ -11,7 +11,41 @@ let ocamlfind = Config.get_param "ocamlfind"
 
 (* stubber ***********************************************************************************)
 
-let stubber = "" 
+(* perhaps some of Unix module should be allowed *)
+let stubber =
+"let stdin = ()
+let stdout = ()
+let stderr = ()
+let print_char = ()
+let print_string = ()
+let print_int = ()
+let print_float = ()
+let print_endline = ()
+let print_newline = ()
+let prerr_char = ()
+let prerr_string = ()
+let prerr_int = ()
+let prerr_float = ()
+let prerr_endline = ()
+let prerr_newline = ()
+let read_line = ()
+let read_int = ()
+let read_float = ()
+let open_out = ()
+let open_out_bin = ()
+let open_out_gen = ()
+let flush_all = ()
+let open_in = ()
+let open_in_bin = ()
+let open_in_gen = ()
+let exit = ()
+let at_exit = ()
+let do_at_exit = ()
+
+module Unix = struct
+ let empty = ()
+end
+" 
 
 (* handle temporary files ********************************************************************)
 
@@ -148,7 +182,7 @@ let let_position file ident =
 let read_annot source file (l1, c1) (l2, c2)  = 
   (* "/tmp/test.ml" 1 0 4 "/tmp/test.ml" 1 0 13 *)
   display "> looking for annotation on %d %d %d %d" l1 c1 l2 c2 ; 
-  let hl = Printf.sprintf "\"%s\" %d \([ 0-9 ]+\) \([ 0-9 ]+\) \"%s\" %d \([ 0-9 ]+\) \([ 0-9 ]+\)" (Str.quote source) l1 (Str.quote source) l2 in 
+  let hl = Printf.sprintf "\"%s\" %d \\([ 0-9 ]+\\) \\([ 0-9 ]+\\) \"%s\" %d \\([ 0-9 ]+\\) \\([ 0-9 ]+\\)" (Str.quote source) l1 (Str.quote source) l2 in 
   let rxp = Str.regexp hl in
   Lwt_io.open_file ~mode:Lwt_io.input file
   >>= fun ic -> 

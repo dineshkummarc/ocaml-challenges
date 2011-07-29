@@ -1,6 +1,8 @@
 open Lwt
 open Misc
 
+(* wikicreole transformation **********************************************************)
+
 let dummy_box_info = 
   let open Wiki_widgets_interface in 
   {
@@ -13,16 +15,24 @@ let dummy_box_info =
     bi_menu_style = `None ; 
   }
 
-let get key = 
-  Persistency.S3.get key 
+let load key = 
+  Persistency.S3.load key 
   >>= fun s -> 
   Wiki_syntax.xml_of_wiki Wiki_syntax.wikicreole_parser dummy_box_info s 
+  >>= fun block -> 
+  return (s, block)
 
-open HTML5.M
+module Cache = Ocsigen_cache.Make (struct type key = string type value = string * (HTML5_types.flow5 Eliom_pervasives.HTML5.M.elt list) end)
 
+let cache = new Cache.cache load (int_of_string (Config.get_param "cache_size"))
+
+let set key value = 
+  Wiki_syntax.xml_of_wiki Wiki_syntax.wikicreole_parser dummy_box_info value 
+  >>= fun block -> cache # add key (key, block) ; return ()
+  
 let handler_get key _ = 
-  get key
-  >>= Nutshell.home
+  cache # find key 
+  >>= fun (_, block) -> Nutshell.home block
 
 let _ = 
   Appl.register Services.Frontend.cms handler_get
@@ -34,16 +44,34 @@ let _ =
   
   open Lwt
   open HTML5.M
+  open Types 
 
-  let __name__ = "cms" 
+  let __name__ = "cmspages" 
   
-  type t = string
-  let render_html5 _ markup = 
+  type key = sdb_key 
+
+  type t = string * (HTML5_types.flow5 Eliom_pervasives.HTML5.M.elt list)
+
+  type diff = string deriving (Json)
+
+  let render_html5 _ (code, markup) = 
     return 
       (div 
          [
-           pcdata markup 
+           h3 [ pcdata code ] ; 
+           div markup
          ])
-      
+
+     
 }}
 
+{server{
+
+  let list () = 
+    cache # list ()
+
+  let update_diff key markup = 
+    (* Persistency.S3.store key markup >>= fun _ -> *)
+    set key markup >>= fun _ -> return true
+
+}}
