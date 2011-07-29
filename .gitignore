@@ -2,7 +2,7 @@ ocsidb
 *byte
 *native
 _build
-*_client*
+src/_client
 *~
 *#*
 *bug*
