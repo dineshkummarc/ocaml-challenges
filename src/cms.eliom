@@ -28,7 +28,13 @@ module Cache = Ocsigen_cache.Make (struct type key = string type value = string 
 
 let cache = new Cache.cache load (int_of_string (Config.get_param "cache_size"))
 
+exception InvalidWikiName
+
 let set key value = 
+  (try ignore (int_of_string key); raise InvalidWikiName with _ -> ()); 
+  display "Storing key %s value %s" key value ; 
+  Persistency.S3.store key value 
+  >>= fun _ -> 
   Wiki_syntax.xml_of_wiki Wiki_syntax.wikicreole_parser dummy_box_info value 
   >>= fun block -> cache # add key (key, value, block) ; return ()
   
@@ -82,7 +88,7 @@ let get key =
     cache # list ()
 
   let update_diff key markup = 
-    (* Persistency.S3.store key markup >>= fun _ -> *)
+    Persistency.S3.store key markup >>= fun _ ->
     Wiki_syntax.xml_of_wiki Wiki_syntax.wikicreole_parser dummy_box_info markup 
     >>= fun block -> cache # add key (key, markup, block) ; return (key, markup, block)
 

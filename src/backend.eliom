@@ -41,7 +41,7 @@ open Types
       let display service s3_service update_service = 
         Eliom_client.call_caml_service ~service () ()
         >>= fun elements -> 
-        alert "Just got %d %s" (List.length elements) E.__name__ ; 
+        
         let container = Eliom_client.Html5.of_div (div []) in 
 
         let rec build_bloc elt = 

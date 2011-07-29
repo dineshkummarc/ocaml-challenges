@@ -41,8 +41,12 @@ module S3 =
           
     let store objekt body = 
       S3.put_object creds !default_region ~bucket ~objekt ~body:(`String body) 
-                
-    module S3_cache = Ocsigen_cache.Make (struct type key = string type value = string end)
+      >>= function 
+        | `Ok -> return () 
+        | `Error msg -> display "ERROR : %s" msg ; return () 
+        | _ -> display "ERROR - Something else" ; return ()
+
+module S3_cache = Ocsigen_cache.Make (struct type key = string type value = string end)
       
     let s3_cache = new S3_cache.cache load (int_of_string (Config.get_param "cache_size"))
       
