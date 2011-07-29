@@ -11,7 +11,41 @@ let ocamlfind = Config.get_param "ocamlfind"
 
 (* stubber ***********************************************************************************)
 
-let stubber = "" 
+(* perhaps some of Unix module should be allowed *)
+let stubber =
+"let stdin = ()
+let stdout = ()
+let stderr = ()
+let print_char = ()
+let print_string = ()
+let print_int = ()
+let print_float = ()
+let print_endline = ()
+let print_newline = ()
+let prerr_char = ()
+let prerr_string = ()
+let prerr_int = ()
+let prerr_float = ()
+let prerr_endline = ()
+let prerr_newline = ()
+let read_line = ()
+let read_int = ()
+let read_float = ()
+let open_out = ()
+let open_out_bin = ()
+let open_out_gen = ()
+let flush_all = ()
+let open_in = ()
+let open_in_bin = ()
+let open_in_gen = ()
+let exit = ()
+let at_exit = ()
+let do_at_exit = ()
+
+module Unix = struct
+ let empty = ()
+end
+" 
 
 (* handle temporary files ********************************************************************)
 
