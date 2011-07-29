@@ -63,7 +63,7 @@ let home content =
                     a ~service:Services.Frontend.challenge_new [ pcdata "Contribute a challenge" ] ()
                   ]; 
                   li [
-                    a ~service:Services.Frontend.cms [ pcdata "About" ] "About"
+                    a ~service:Services.Frontend.cms [ pcdata "About" ] "about"
                   ]
                 ]
               ]

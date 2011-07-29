@@ -43,3 +43,7 @@ let _ =
   ignore (genac ()) 
 
 *)
+
+let _ = 
+  Lwt_main.run 
+    (Persistency.S3.set "about" "==About==\n\n*test *test2 //naother test//")
