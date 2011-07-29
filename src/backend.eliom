@@ -83,10 +83,10 @@ module Viz (E : ELT) =
 
 module VChallenges = Viz (Persistency.Challenges)
 module VSolutions = Viz (Persistency.Solutions)
+module VCms = Viz (Cms)
 
 let home_handler _ _ =
 
-  
   let onload_challenges = {{
     VChallenges.init
     (Eliom_client.Html5.of_element %VChallenges.elt_container) 
@@ -101,13 +101,22 @@ let home_handler _ _ =
     %VSolutions.service_get
     %Services.Hidden.s3_get }} in 
 
+   let onload_cms = {{
+    VCms.init
+    (Eliom_client.Html5.of_element %VCms.elt_container) 
+    (Eliom_client.Html5.of_element %VCms.menu_container)
+    %VCms.service_get
+    %Services.Hidden.s3_get }} in 
+
   Eliom_services.onload onload_challenges ;
   Eliom_services.onload onload_solutions ;
+  Eliom_services.onload onload_cms ; 
   Nutshell.home
     [ 
       h1 [ pcdata "naive backend" ] ; 
       VChallenges.menu_container ; 
-      VSolutions.menu_container
+      VSolutions.menu_container ; 
+      VCms.menu_container
     ]
 
 
