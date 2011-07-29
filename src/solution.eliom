@@ -10,7 +10,11 @@
   let __name__ = "solutions" 
 
   type status = [ `Score of int | `Failed of (string * string) | `Pending ] deriving (Json)
-           
+
+      
+  type key = sdb_key
+  type diff = string deriving (Json)
+
   type t = 
       {
         uid : sdb_key ; 
@@ -31,11 +35,29 @@
                 h3 [ pcdata t.author ]
               ])
 
+  let update_form _ key update_service =
+    post_form update_service 
+      (fun diff -> 
+        [
+          div [
+            string_input ~input_type:`Text ~name:diff () 
+          ]; 
+          div [
+            string_input ~input_type:`Submit ~value:"update" () 
+          ]
+        ]) key
       
   let uid t = 
     t.uid
 
 }}
+
+{client{
+  let build_diff _ = 
+    alert "not implemented" ;
+    Js.null
+}}
+
 
 open Misc
 
