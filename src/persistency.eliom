@@ -1,6 +1,9 @@
 open Lwt
-open Misc
-open Types
+
+{shared{
+  open Misc
+  open Types
+}}
 
 let creds = 
   {
@@ -67,6 +70,7 @@ module type LS =
     val of_sdb : (string * string) list -> t
     val to_sdb : t -> (string * string) list
   end
+
 
 module LFactory (L : LS) = 
   struct
@@ -174,5 +178,55 @@ let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler
   
   let fetch_from_s3 service key = 
     Eliom_client.call_caml_service ~service
+
+}}
+
+(* we also need to expose a bunch of signatures *********************************************************)
+
+(* you can consider the following lines as a super dirty hack .. *)
+
+{client{
+
+  module type LS = 
+  sig
+    type t
+    type key = sdb_key
+    type diff deriving (Json)
+    
+    val __name__ : string 
+      
+    val render_html5 : 'a -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
+    val update_form : t -> key ->
+      (string, diff, [< Eliom_services.post_service_kind ],
+       [< Eliom_services.suff ], 'd,
+       [< string Eliom_parameters.setoneradio ]
+         Eliom_parameters.param_name, [< Eliom_services.registrable ], 'e)
+        Eliom_services.service -> [> HTML5_types.form ] Eliom_pervasives.HTML5.M.elt
+
+    val uid : t -> key
+    val build_diff : key -> diff Js.Opt.t
+  end
+  
+  module LFactory (L : LS) = 
+  struct
+    
+    exception Error
+      
+    type key = sdb_key
+    type t = L.t 
+    type diff = L.diff deriving (Json)
+
+
+    let update_form = L.update_form
+    let __name__ = L.__name__
+    let render_html5 = L.render_html5
+    let uid = L.uid
+      
+    let build_diff = L.build_diff
+  end
+    
+ module Challenges = LFactory (Challenge)
+ module Solutions = LFactory (Solution)
+
 
 }}

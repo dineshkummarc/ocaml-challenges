@@ -45,6 +45,8 @@ let do_at_exit = ()
 module Unix = struct
  let empty = ()
 end
+
+module Pervasives = struct let empty () end 
 " 
 
 (* handle temporary files ********************************************************************)
