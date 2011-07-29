@@ -11,10 +11,9 @@ module Frontend =
     let challenge_view = service [ "challenge"; "view" ] (suffix (string "id")) ()
 
     let challenge_new = service [ "challenge"; "new" ] unit ()
-    let challenge_new_post = post_service challenge_new (string "author" ** string "title" ** string "description" ** int "difficulty" ** list "hints" (string "value") ** string "tags" ** string "control_code" ** string "sample_solution") () (* add tags + control_code file sending, and maybe create facebook comment *)
+    let challenge_new_post = post_service challenge_new (string "author" ** string "title" ** string "description" ** int "difficulty" ** list "hints" (string "value") ** string "tags" ** string "control_code" ** string "sample_solution" ** string "signature") () (* add tags + control_code file sending, and maybe create facebook comment *)
 
-    let challenge_confirmation = service [ "challenge"; "confirmation" ] (suffix (string "id")) ()
-    let challenge_confirmation_update = service [ "challenge"; "update" ] any ()
+    let new_challenge_interprete = service [ "challenge"; "inteprete" ] (suffix (string "control_code" ** string "sample_solution")) ()
 
     let delete_challenge = service [ "challenge"; "delete" ] (suffix (string "id")) ()
 

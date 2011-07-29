@@ -13,8 +13,9 @@
 
   open Misc
 
-  let new_challenge_form (author, (title, (description, (difficulty, (hints, (tags, (control_code, sample_solution))))))) =
+  let new_challenge_form (author, (title, (description, (difficulty, (hints, (tags, (control_code, (sample_solution, signature)))))))) =
     [
+      string_input ~a:([a_id "signature_challenge" ]) ~input_type:`Hidden ~name:signature () ;
       table ~columns:[ (colgroup [
           col ~a:([a_style "text-align: center"; a_span 3]) ();
         ])] (
@@ -60,12 +61,12 @@
             td ~a:([a_colspan 2]) [ string_input ~a:([ a_id "tags_challenge" ]) ~input_type:`Text ~name:tags () ; ];
           ];
           tr [
-            td ~a:([a_colspan 3; a_style "text-align:right"]) [ button ~button_type:`Submit [ span [ pcdata "Submit" ] ] ]
+            td ~a:([a_colspan 3; a_style "text-align:right"]) [ button ~a:([a_id "new_challenge_submit_btn"]) ~button_type:`Submit [ span [ pcdata "Submit" ] ] ]
           ]
         ]
     ]
 
-  let init_new container service =
+  let init_new container s_challenge_new s_check_interprete =
 
     let rec extend_hint_list hint_ul =
       let name = Printf.sprintf "hints.value[%d]" ((hint_ul ## childNodes) ## length) in
@@ -86,7 +87,7 @@
         | false -> Js._true
     in
 
-    let form = post_form ~a:[ a_id "create_challenge_form" ] ~service new_challenge_form () in
+    let form = post_form ~a:[ a_id "create_challenge_form" ] ~no_appl:true ~service:s_challenge_new new_challenge_form () in
     Dom.appendChild container (Eliom_client.Html5.of_element form);
 
     (* event *)
@@ -134,9 +135,74 @@
           )
         )
       )
+    );
+
+    let launch_interpreter control_code sample_solution =
+      let create_error_div div_instruction form_challenge s message =
+        let m = div ~a:([a_id "div_error_processing"]) [ p ~a:([a_style "color:red"]) [ pcdata (Printf.sprintf "%s : %s" s message) ]] in
+        let m2 = div ~a:([a_id "div_error_processing2"]) [ p ~a:([a_style "color:red"]) [ pcdata (Printf.sprintf "%s : %s" s message) ]] in
+        Js.Opt.iter (Dom_html.document ## getElementById (Js.string "div_error_processing")) (
+          fun div_error_processing ->
+            Dom.removeChild div_instruction div_error_processing
+        );
+        Js.Opt.iter (Dom_html.document ## getElementById (Js.string "div_error_processing2")) (
+          fun div_error_processing ->
+            Dom.removeChild form_challenge div_error_processing
+        );
+        Dom.appendChild div_instruction (Eliom_client.Html5.of_element m);
+        Dom.appendChild form_challenge (Eliom_client.Html5.of_element m2)
+      in
+      
+      Eliom_client.call_caml_service ~service:s_check_interprete (Js.to_string control_code, Js.to_string sample_solution) ()
+        >>= fun resp ->
+          Js.Opt.iter (Dom_html.document ## getElementById (Js.string "challenge_instruction")) (
+          fun div_instruction ->
+            Js.Opt.iter (Dom_html.document ## getElementById (Js.string "create_challenge_form")) (
+            fun form_challenge ->
+              match resp with
+                | `Invalid_code message -> create_error_div div_instruction form_challenge "Invalid code" message
+                | `Panic message -> create_error_div div_instruction form_challenge "An error as occured" message
+                | `Signature signature -> Js.Opt.iter (Dom_html.document ## getElementById (Js.string "create_challenge_form")) (
+                                          fun form ->
+                                            Js.Opt.iter (Dom_html.CoerceTo.form form) (
+                                            fun form ->
+                                              Js.Opt.iter (Dom_html.document ## getElementById (Js.string "signature_challenge")) (
+                                              fun sign ->
+                                                Js.Opt.iter (Dom_html.CoerceTo.input sign) (
+                                                fun sign ->
+                                                  sign ## value <- Js.string signature;
+                                                  form ## submit ()
+                                                )
+                                              )
+                                            )
+                                          )
+            )
+          );
+        Lwt.return ()
+
+    in
+
+    Js.Opt.iter (Dom_html.document ## getElementById (Js.string "new_challenge_submit_btn")) (
+    fun submit_button ->
+      Js.Opt.iter (Dom_html.document ## getElementById (Js.string "control_code_challenge")) (
+      fun control_code ->
+        Js.Opt.iter (Dom_html.CoerceTo.textarea control_code) (
+        fun control_code ->
+          Js.Opt.iter (Dom_html.document ## getElementById (Js.string "solution_sample_code")) (
+          fun sample_solution ->
+            Js.Opt.iter (Dom_html.CoerceTo.textarea sample_solution) (
+            fun sample_solution ->
+              submit_button ## onclick <- Dom_html.handler (fun _ ->
+                Lwt.ignore_result (launch_interpreter (control_code ## value) (sample_solution ## value));
+                Js._false
+              )
+            )
+          )
+        )
+      )
     )
 
-  let init_confirmation container challenge description sample_solution control_code hint_list =
+  let init_visualisation container challenge description sample_solution control_code hint_list signature =
     let hints_list = 
       List.fold_left (
         fun acc el ->
@@ -149,12 +215,13 @@
         h3 [ pcdata challenge.title ];
         table (
           tr [ 
-              td [ pcdata "author"];
+              td [ pcdata "Author"];
               td [ pcdata challenge.author ]]
           ) [
-              tr [ td [ pcdata "description"]; td [ pcdata description ]];
-              tr [ td [ pcdata "sample_solution"]; td [ pcdata sample_solution ]];
-              tr [td [ pcdata "control_code"]; td [ pcdata control_code ]];
+              tr [ td [ pcdata "Description"]; td [ pcdata description ]];
+              tr [ td [ pcdata "Sample solution"]; td [ pcdata sample_solution ]];
+              tr [ td [ pcdata "Control code"]; td [ pcdata control_code ]];
+              tr [ td [ pcdata "Signature" ]; td [ pcdata signature ]];
               tr [
                 td [ pcdata "hints" ];
                 (match hints_list with
@@ -165,18 +232,19 @@
           ]
       ] in
     Dom.appendChild (Eliom_client.Html5.of_element container) (Eliom_client.Html5.of_element content)
+
 }}
 
 let new_handler _ _ =
   let c = unique (div []) in
 
   Eliom_services.onload  {{
-    init_new (Eliom_client.Html5.of_element %c) %Services.Frontend.challenge_new_post
+    init_new (Eliom_client.Html5.of_element %c) %Services.Frontend.challenge_new_post %Services.Frontend.new_challenge_interprete
   }};
 
   Nutshell.home [ 
     h2 [ pcdata "Sharing a challenge" ]; 
-    div ~a:[ a_class [ "challenge_sharing_instructions" ]] 
+    div ~a:[ a_class [ "challenge_sharing_instructions" ]; a_id "challenge_instruction"] 
       [
         pcdata "Thanks for contributing! Please submit along with your challenge a piece of code that checks solutions and a sample solution" ;
         br () ; 
@@ -211,27 +279,25 @@ let build_list_from_s3 s3_f l =
     s3_f el
   ) l
 
-let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags, (control_code, sample_solution))))))) =
 
+let new_challenge_interprete_handler (control_code, sample_solution) _ =
   Interpreter.check_and_infer_signature control_code sample_solution
-  >>= function 
-    | `Invalid_code message -> failwith message 
-    | `Panic message -> failwith message
-    | `Signature signature -> 
-      
-      let regexp = Str.regexp "[; \t]+" in
-      let tags_list = Str.split regexp tags in
-      
+
+let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags, (control_code, (sample_solution, signature)))))))) =
+
+  let regexp = Str.regexp "[; \t]+" in
+  let tags_list = Str.split regexp tags in
+
   lwt s3_hints_list = build_s3_from_list Persistency.S3.set Uid.generate hints in
 
-let s3_description = Uid.generate () in
+  let s3_description = Uid.generate () in
   let s3_control_code = Uid.generate () in
   let s3_sample_solution = Uid.generate () in
   let uid = Uid.generate () in
     
   let challenge = {
-    uid = uid;
-    author = author ;
+    uid;
+    author ;
     active = false ;
     submission_date = Date.now () ;
     title = title ;
@@ -250,28 +316,17 @@ let s3_description = Uid.generate () in
   Persistency.S3.set s3_control_code control_code >>= fun _ ->
   Persistency.S3.set s3_sample_solution sample_solution >>= fun _ ->
   Persistency.Challenges.update challenge >>= fun _ ->
-  Lwt.return (Eliom_services.preapply ~service:Services.Frontend.challenge_confirmation uid)
+    let c = unique (div []) in
+    Eliom_services.onload {{
+      init_visualisation %c %challenge %description %sample_solution %control_code %hints %signature
+    }};
+    Nutshell.home [
+      h2 [ pcdata "You just create a challenge !" ];
+      c
+    ]
 
-let challenge_confirmation_handler uid _ =
-  Persistency.Challenges.get uid >>= fun challenge ->
-
-  lwt description = Persistency.S3.get challenge.description in
-  lwt sample_solution = Persistency.S3.get challenge.sample_solution in
-  lwt control_code = Persistency.S3.get challenge.control_code in
-  lwt hint_list = build_list_from_s3 Persistency.S3.get challenge.hints in
-
-  let c = unique (div ~a:[ a_id "new_challenge_form" ] []) in
-
-  Eliom_services.onload {{
-    init_confirmation %c %challenge %description %sample_solution %control_code %hint_list
-  }};
-
-  Nutshell.home [
-    h2 [ pcdata "Sharing a challenge" ];
-    c
-  ]
 
 let _ =
   Appl.register Services.Frontend.challenge_new new_handler;
-  Eliom_output.Redirection.register Services.Frontend.challenge_new_post new_post_handler;
-  Appl.register Services.Frontend.challenge_confirmation challenge_confirmation_handler
+  Appl.register Services.Frontend.challenge_new_post new_post_handler;
+  Eliom_output.Caml.register Services.Frontend.new_challenge_interprete new_challenge_interprete_handler

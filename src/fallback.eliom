@@ -14,8 +14,6 @@ let fallback _ _ =
 
 let _ =
 
-  Appl.register Services.Frontend.challenge_confirmation_update fallback;
-
   Appl.register Services.Frontend.delete_challenge fallback;
 
   Appl.register Services.Frontend.solution_new fallback;
