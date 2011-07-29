@@ -33,7 +33,7 @@ end
 
 module Backend = 
   struct 
-    let home = service [ "backend" ; "home" ] unit () 
+    let home = service [ "backend" ; Config.get_param "salt"; "home" ] unit () 
   end
 
 module Hidden = 

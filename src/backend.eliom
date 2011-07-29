@@ -111,8 +111,8 @@ module Viz (E : ELT) =
     
     (* Services that send the list of elements ******************************************)
     
-    let service_get = service [ "get_elements" ; E.__name__ ] unit () 
-    let service_update_fallback = service [ "update_element" ; E.__name__ ] (string "key") () 
+    let service_get = service [ "get_elements" ; Config.get_param "salt";  E.__name__ ] unit () 
+    let service_update_fallback = service [ "update_element" ; Config.get_param "salt"; E.__name__ ] (string "key") () 
     let service_update = post_service service_update_fallback (caml "value" (Json.t< E.diff> )) () 
             
     let handler_get () () = 
@@ -161,7 +161,7 @@ let home_handler _ _ =
     %Services.Hidden.s3_get
     %VSolutions.service_update }} in 
 
-   let onload_cms = {{
+  let onload_cms = {{
     VCms.init
     (Eliom_client.Html5.of_element %VCms.elt_container) 
     (Eliom_client.Html5.of_element %VCms.menu_container)
