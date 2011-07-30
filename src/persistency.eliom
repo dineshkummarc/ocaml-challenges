@@ -136,13 +136,13 @@ module LFactory (L : LS) =
       List.length (List.filter L.visible (cache # list ())) (* <- change that! *)
 
     let rec init ?(token=None) () = 
-      SDB.select creds ("select * from " ^ L.domain)
+      display "> init %s" L.__name__ ; 
+      SDB.select ~token creds ("select * from " ^ L.domain)
       >>= function 
         | `Ok (elements, token) -> 
           (List.iter
              (fun (name, attrs) -> 
                try 
-              
                  (try Uid.tick (int_of_string name) with _ -> ()); 
                  let attrs = List.fold_left
                    (fun acc -> 

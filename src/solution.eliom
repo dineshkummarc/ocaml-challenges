@@ -30,9 +30,12 @@
 
 
   let render_html5 s3_service t = 
-    return (div
+    s3_service t.content 
+    >>= fun content -> 
+    return (div ~a:[ a_class [ "challenge_short" ]]
               [
-                h3 [ pcdata t.author ]
+                h3 [ pcdata t.author ] ; 
+                div [ pcdata content ] ; 
               ])
 
   let update_form _ _ key update_service =
@@ -53,7 +56,7 @@
 
       
   let visible t = 
-    false
+    true
 }}
 
 {client{

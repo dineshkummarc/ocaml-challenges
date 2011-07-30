@@ -5,13 +5,13 @@ body {
     margin: auto ;
     padding-left: 10px; 
     padding-right: 10px; 
-
+    text-align: justify ;
 }
 
 /*****/
 /********** global settings */
 a, a:visited, a:active, a:focus {
-    text-decoration: none;     
+ //   text-decoration: none;     
     color: #000000; 
 }
 
@@ -39,6 +39,11 @@ a#github-link {
 
 header {
     padding-top: 15px ; 
+}
+
+header a, a:visited, a:active, a:focus {
+    text-decoration: none;     
+    color: #000000; 
 }
 
 
@@ -420,4 +425,8 @@ form.usual_form div label {
 
 form.usual_form div input {
     float: right ; 
+}
+
+table.backend_table {
+    width: 700px; 
 }
