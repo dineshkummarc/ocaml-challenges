@@ -259,7 +259,7 @@ let read_annot source file (l1, c1) (l2, c2)  =
                               read_annot source annot p1 p2 
                               >>= fun signature -> 
                               display "signature is %s" signature ; 
-                              return (`Signature signature))
+                              return (`Signature ("val main : " ^ signature))
                             (function
                                 | End_of_file -> return (`Invalid_code "no function called benchmark detected")
                                 | e -> fail e))
