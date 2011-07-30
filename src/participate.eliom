@@ -60,22 +60,7 @@ open HTML5.M
 
     empty result_box ; 
     Dom.appendChild result_box (Eliom_client.Html5.of_element (format_result r)) ; 
-  (*  build_solution_box challenge_id submit_solution_box result_box service1 service2  ; *)
     return () 
-
-
-  (* and build_solution_box challenge_id submit_solution_btn result_box submit_solution_service1 submit_solution_service2 = 
-    let submit_handler =
-      Dom_html.handler
-        (fun ev -> 
-          Lwt.ignore_result (send_solution submit_solution_btn result_box submit_solution_service1 submit_solution_service2 challenge_id (evaluate ())) ; 
-          Js._false) in
-    
-    let form = Eliom_client.Html5.of_element (Eliom_output.Html5_forms.post_form ~no_appl:true ~service:submit_solution_service1 solution_form challenge_id) in 
-    
-    let _ = Dom_html.addEventListener form Dom_html.Event.submit submit_handler Js._false in 
-    
-    Dom.appendChild submit_solution_btn form  *)
 
   let add_event_on_hint_list () =
     Js.Opt.iter (Dom_html.document##getElementById (Js.string "btn_show_hint")) (

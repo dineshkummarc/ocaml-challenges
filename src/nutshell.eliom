@@ -46,7 +46,7 @@ lwt contribute = Cms.get "contribute" in
       %activity_init
           
   }} ; 
-    html
+    html ~a:[ a_xml_lang "en" ]
        (head (title (pcdata "OCaml puzzles")) [
          link ~rel:[ `Stylesheet ] ~href:(uri_of_string "/common.css") ();
          script ~a:[ a_mime_type "application/x-javascript"; a_src (uri_of_string "/runtime.js") ] (pcdata "") ;
@@ -64,7 +64,7 @@ lwt contribute = Cms.get "contribute" in
                 [
                   h4 [ 
                     span ~a:[ a_id "hdlineL" ] [ pcdata "handcrafted by the" ] ; 
-                span ~a:[ a_id "hdlineR" ] [ pcdata "Bay Area OCaml User Group" ] ; 
+                    span ~a:[ a_id "hdlineR" ] [ pcdata "Bay Area OCaml User Group" ] ; 
                   ] ; 
                 ];
               nav [
