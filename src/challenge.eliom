@@ -10,7 +10,21 @@
   let __name__ = "challenges" 
     
   type key = sdb_key
-  type diff = string deriving (Json)
+
+  type diff =
+      {
+        d_author : string ; 
+        d_active : bool ; 
+        d_title : string ; 
+        d_description : string ; 
+        d_signature : string ; 
+        d_difficulty : int ; 
+        d_hints : string list ; 
+        d_tags : string list ; 
+        d_sample_solution : string ; 
+        d_control_code : string ; 
+      } deriving (Json)
+  
   type t = 
       {
         uid : sdb_key ; 
@@ -54,28 +68,141 @@
               ])
 
 
-  let update_form _ key update_service =
-    post_form update_service 
-      (fun diff -> 
-        [
-          div [
-            string_input ~input_type:`Text ~name:diff () 
-          ]; 
+  let update_form s3get v key update_service =
+    
+    let string_field field value =
+      div [
+        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
+        string_input ~a:[ a_id (key ^ "__" ^ field) ] ~value ~input_type:`Text () 
+      ] in
+
+    let int_field field value =
+      div [
+        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
+        int_input ~a:[ a_id (key ^ "__" ^ field) ] ~value ~input_type:`Text () 
+      ] in
+
+
+    let textarea_field field value =
+      div [
+        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
+        raw_textarea ~name:"blob" ~rows:30 ~cols:60 ~value ~a:[ a_id (key ^ "__" ^ field) ] () 
+      ] in
+
+
+    let bool_field field checked =
+      div [
+        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
+        raw_checkbox ~a:[ a_id (key ^ "__" ^ field) ] ~name: "bloby" ~value: (if checked then "checked" else "") () 
+      ] in
+        
+    s3get v.description 
+    >>= fun description -> 
+    s3get v.control_code 
+    >>= fun control_code -> 
+    s3get v.sample_solution
+    >>= fun sample_solution-> 
+    
+    return 
+      (
+        post_form update_service 
+          (fun _ -> 
+            [ 
+              string_field "author" v.author ; 
+              bool_field "active" v.active ;
+              string_field "title" v.title ; 
+              string_field "signature" v.signature ; 
+              int_field "difficulty" v.difficulty ; 
+              textarea_field "description" description ; 
+              textarea_field "control_code" control_code ; 
+              textarea_field "sample_solution" sample_solution ; 
+              
           div [
             string_input ~input_type:`Submit ~value:"update" () 
           ]
-        ]) key
+            
+            ]) key)
       
   let uid t = 
     t.uid
       
 }}
 
+let update_diff value diff =
+  return value
 
 {client{
-  let build_diff _ =
-    alert "not implemented"; 
-    Js.null
+  open Misc
+
+  let build_diff key =    
+    let gid field = Dom_html.document ## getElementById (Js.string (key ^ "__" ^ field)) in
+    
+    Js.Opt.bind 
+      (Js.Opt.bind 
+         (gid "author")
+         (Dom_html.CoerceTo.input))
+      (fun author -> 
+        Js.Opt.bind 
+          (Js.Opt.bind 
+             (gid "active")
+             (Dom_html.CoerceTo.input))
+          (fun active -> 
+            Js.Opt.bind 
+              (Js.Opt.bind 
+                 (gid "title")
+                 (Dom_html.CoerceTo.input))
+              (fun title -> 
+                Js.Opt.bind 
+                  (Js.Opt.bind 
+                     (gid "description")
+                     (Dom_html.CoerceTo.textarea))
+                  (fun description -> 
+                    Js.Opt.bind 
+                      (Js.Opt.bind 
+                         (gid "signature")
+                         (Dom_html.CoerceTo.input))
+                      (fun signature -> 
+                        Js.Opt.bind 
+                          (Js.Opt.bind 
+                             (gid "difficulty")
+                             (Dom_html.CoerceTo.input))
+                          (fun difficulty -> 
+                            Js.Opt.bind 
+                              (Js.Opt.bind 
+                                 (gid "control_code")
+                                 (Dom_html.CoerceTo.textarea))
+                              (fun control_code -> 
+                                Js.Opt.bind 
+                                  (Js.Opt.bind 
+                                     (gid "sample_solution")
+                                     (Dom_html.CoerceTo.textarea))
+                                  (fun sample_solution -> 
+                                    alert "we have everything :)" ;
+                                    let diff = 
+                                      {
+                                        d_author = Js.to_string author ## value ; 
+                                        d_active = true ; 
+                                        d_title = Js.to_string title ## value ; 
+                                        d_description = Js.to_string description ## value ; 
+                                        d_signature = Js.to_string signature ## value ; 
+                                        d_difficulty = int_of_string (Js.to_string difficulty ## value) ; 
+                                        d_hints = [] ; 
+                                        d_tags = [] ; 
+                                        d_sample_solution = Js.to_string sample_solution ## value ; 
+                                        d_control_code = Js.to_string control_code ## value ;
+                                      } in 
+                                    alert "diff built" ;
+                                    Js.some diff 
+                                  )
+                              )
+                          )
+                      )
+                  )
+              )
+          )
+      )
+
+
 }}
 
 open Misc
@@ -126,5 +253,4 @@ let of_sdb l =
     submitted_solutions = fetch_string_list l "submitted_solutions" ; 
     
     facebook_id = fetch_string l "facebook_id" ;
-  
 }

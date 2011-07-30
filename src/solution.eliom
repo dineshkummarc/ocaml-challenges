@@ -35,17 +35,18 @@
                 h3 [ pcdata t.author ]
               ])
 
-  let update_form _ key update_service =
-    post_form update_service 
-      (fun diff -> 
-        [
-          div [
-            string_input ~input_type:`Text ~name:diff () 
-          ]; 
-          div [
-            string_input ~input_type:`Submit ~value:"update" () 
-          ]
-        ]) key
+  let update_form _ _ key update_service =
+    return 
+      (post_form update_service 
+         (fun diff -> 
+           [
+             div [
+               string_input ~input_type:`Text ~name:diff () 
+             ]; 
+             div [
+               string_input ~input_type:`Submit ~value:"update" () 
+             ]
+           ]) key)
       
   let uid t = 
     t.uid
@@ -58,6 +59,10 @@
     Js.null
 }}
 
+
+
+let update_diff value diff =
+  return value
 
 open Misc
 

@@ -63,8 +63,9 @@ module S3_cache = Ocsigen_cache.Make (struct type key = string type value = stri
 
 module type LS = 
   sig
+    type key = sdb_key
     type t deriving (Json)
-
+    type diff deriving (Json)
     val cache_size : int
     val domain : string 
 
@@ -73,7 +74,9 @@ module type LS =
     val uid : t -> sdb_key
     val of_sdb : (string * string) list -> t
     val to_sdb : t -> (string * string) list
-  end
+  
+    val update_diff : t -> diff -> t Lwt.t 
+end
 
 
 module LFactory (L : LS) = 
@@ -83,7 +86,7 @@ module LFactory (L : LS) =
 
     type key = sdb_key
     type t = L.t 
-    type diff = L.t deriving (Json)
+    type diff = L.diff deriving (Json)
 
     let __name__ = L.__name__
 
@@ -116,9 +119,12 @@ module LFactory (L : LS) =
 
     let list () = 
       cache # list ()
-
-    let update_diff key _ = 
-      failwith "not implemented" 
+      
+    let update_diff key diff = 
+      display "> got the diff" ;
+      cache # find key 
+      >>= fun value -> 
+      L.update_diff value diff
 
     let cardinal () = 
       cache # size 
@@ -181,7 +187,7 @@ let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler
   open Lwt 
   
   let fetch_from_s3 service key = 
-    Eliom_client.call_caml_service ~service
+    Eliom_client.call_caml_service ~service key () 
 
 }}
 
@@ -199,13 +205,13 @@ let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler
     
     val __name__ : string 
       
-    val render_html5 : 'a -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
-    val update_form : t -> key ->
+    val render_html5 :  (Types.s3_path -> string Lwt.t) -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
+    val update_form : (Types.s3_path -> string Lwt.t) -> t -> key ->
       (string, diff, [< Eliom_services.post_service_kind ],
        [< Eliom_services.suff ], 'd,
        [< string Eliom_parameters.setoneradio ]
          Eliom_parameters.param_name, [< Eliom_services.registrable ], 'e)
-        Eliom_services.service -> [> HTML5_types.form ] Eliom_pervasives.HTML5.M.elt
+        Eliom_services.service -> [> HTML5_types.form ] Eliom_pervasives.HTML5.M.elt Lwt.t
 
     val uid : t -> key
     val build_diff : key -> diff Js.Opt.t
