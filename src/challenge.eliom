@@ -197,7 +197,7 @@ let update_diff s3_store value diff =
                                     let diff = 
                                       {
                                         d_author = Js.to_string author ## value ; 
-                                        d_active = true ; 
+                                        d_active = Js.to_bool active ## checked  ; 
                                         d_title = Js.to_string title ## value ; 
                                         d_description = Js.to_string description ## value ; 
                                         d_signature = Js.to_string signature ## value ; 
