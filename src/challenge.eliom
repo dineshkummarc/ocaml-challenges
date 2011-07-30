@@ -144,6 +144,7 @@ let update_diff s3_store value diff =
         description ; 
         sample_solution ; 
         control_code ;
+        signature = diff.d_signature ;
     }
 
 {client{
