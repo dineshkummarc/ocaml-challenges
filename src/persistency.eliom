@@ -53,8 +53,8 @@ module S3_cache = Ocsigen_cache.Make (struct type key = string type value = stri
     let get = s3_cache # find 
       
     let set key value = 
-    (*  store key value
-      >>= fun _ -> *) s3_cache # add key value ; return () 
+      store key value
+      >>= fun _ -> s3_cache # add key value ; return () 
         
     let set_fresh value = 
       let key = Uid.generate () in
@@ -103,7 +103,7 @@ module LFactory (L : LS) =
         | `Error _ -> fail Error
 
     let save value = 
-      SDB.put_attributes creds L.domain (L.uid value) (L.to_sdb value)
+      SDB.put_attributes ~replace:true creds L.domain (L.uid value) (L.to_sdb value)
       >>= function
         | `Ok -> return ()
         | `Error _ -> fail Error
@@ -114,8 +114,8 @@ module LFactory (L : LS) =
       cache # find key
         
     let update value = 
-      (* save value 
-      >>= function _ -> *)
+      save value 
+      >>= function _ ->
         let key = L.uid value in
         cache # remove key ; 
         cache # add key value ; 
@@ -142,16 +142,17 @@ module LFactory (L : LS) =
           (List.iter
              (fun (name, attrs) -> 
                try 
+              
                  (try Uid.tick (int_of_string name) with _ -> ()); 
                  let attrs = List.fold_left
                    (fun acc -> 
                      function 
-                       | label, None -> acc 
+                       | label, None -> (label, "") :: acc 
                        | label, Some v -> (label, v) :: acc) [] attrs in
                  let value = L.of_sdb attrs in
                  let key = L.uid value in 
                  cache # add key value 
-               with _ -> display "> discarding item %s from domain %s" name L.domain) elements ; 
+               with e -> display "> discarding item %s from domain %s: %s" name L.domain (Printexc.to_string e)) elements ; 
            match token with 
                None -> display "> loading domain %s done" L.domain ; return () 
              | Some _ as token -> init ~token ())

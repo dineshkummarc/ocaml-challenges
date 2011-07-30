@@ -38,7 +38,7 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
   let challenge = {
     uid;
     author ;
-    active = false ;
+    active = true ;
     submission_date = Date.now () ;
     title = title ;
     description = s3_description ;

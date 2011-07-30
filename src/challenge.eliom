@@ -250,7 +250,7 @@ let of_sdb l =
     uid = fetch_string l "uid" ; 
     author = fetch_string l "author" ;
     active = fetch_bool l "active" ; 
-    submission_date = fetch_date l "date" ; 
+    submission_date = fetch_date l "submission_date" ; 
     
     title = fetch_string l "title" ; 
     description = fetch_string l "description" ; 

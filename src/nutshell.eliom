@@ -46,7 +46,7 @@ lwt contribute = Cms.get "contribute" in
             ] ; 
             header [
               hgroup 
-                (h1 [ pcdata "OCaml puzzles" ])
+                (h1 [ a Services.Frontend.home [ pcdata "OCaml puzzles" ] () ])
                 [
                   h4 [ 
                     span ~a:[ a_id "hdlineL" ] [ pcdata "handcrafted by the" ] ; 

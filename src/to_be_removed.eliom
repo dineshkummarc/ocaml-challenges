@@ -3,7 +3,7 @@
 open Lwt
 open Misc
 open Types
-
+(*
 let _ = 
   display "> inserting dummy values" ; 
   let open Challenge in 
@@ -32,6 +32,10 @@ let _ =
         >>= fun _ -> Persistency.S3.set s3_description "Write a function main that takes an integer as an argument and return its successor" 
         >>= fun _ -> Persistency.S3.set s3_control_code "let benchmark f = match f 1 with 2 -> `Success (1, \"Not so bad dude\") | _ -> `Failure (\"Your code does not solve the challenge..\")"
         )
+
+*)
+
+
 (*
 
 let _ = 

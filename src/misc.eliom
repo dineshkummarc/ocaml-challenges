@@ -15,21 +15,31 @@ let sdb_append label elements acc =
   snd (List.fold_left (fun (i, acc) e -> (i+1), ((sprintf "%s.%d" label i), e) :: acc) (1, acc) elements)
 
 let fetch_string l label = 
-  List.assoc label l
+  try
+    List.assoc label l
+  with Not_found -> display "> missing %s" label ; raise Not_found
 
 let fetch_int l label = 
-  int_of_string (List.assoc label l)
+  try
+    int_of_string (List.assoc label l)
+  with Not_found -> display "> missing %s" label ; raise Not_found
 
 let fetch_bool l label = 
-  bool_of_string (List.assoc label l)
+  try
+    bool_of_string (List.assoc label l)
+  with Not_found -> display "> missing %s" label ; raise Not_found
 
 let fetch_string_list l label =
-  let rxp = Str.regexp_string (label^".") in
-  List.fold_left (fun acc (k, v) -> if Str.string_match rxp k 0 then v :: acc else acc) [] l
+  try
+    let rxp = Str.regexp_string (label^".") in
+    List.fold_left (fun acc (k, v) -> if Str.string_match rxp k 0 then v :: acc else acc) [] l
+  with Not_found -> display "> missing %s" label ; raise Not_found
   
 let fetch_date l label = 
-  Date.of_string (List.assoc label l)
-
+  try 
+    Date.of_string (List.assoc label l)
+  with Not_found -> display "> missing %s" label ; raise Not_found
+    
 let filter_empty_string_from_list l =
   let regexp = Str.regexp "^[ \t]*$" in
   List.filter (
