@@ -186,7 +186,7 @@
                                           fun form -> Js.Opt.iter (Dom_html.CoerceTo.form form) (
                                             fun form -> Js.Opt.iter (Dom_html.document ## getElementById (Js.string "signature_challenge")) (
                                               fun sign -> Js.Opt.iter (Dom_html.CoerceTo.input sign) (
-                                                fun sign -> sign ## value <- Js.string signature;
+                                                fun sign -> sign ## value <- Js.string (String.sub signature 0 ((String.length signature) - 54));
                                                   form ## submit ()
                                                 )
                                               )

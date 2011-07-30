@@ -64,7 +64,7 @@ open HTML5.M
     return () 
 
 
-  and build_solution_box challenge_id submit_solution_btn result_box submit_solution_service1 submit_solution_service2 = 
+  (* and build_solution_box challenge_id submit_solution_btn result_box submit_solution_service1 submit_solution_service2 = 
     let submit_handler =
       Dom_html.handler
         (fun ev -> 
@@ -75,36 +75,87 @@ open HTML5.M
     
     let _ = Dom_html.addEventListener form Dom_html.Event.submit submit_handler Js._false in 
     
-    Dom.appendChild submit_solution_btn form 
-    
+    Dom.appendChild submit_solution_btn form  *)
+
+  let add_event_on_hint_list () =
+    Js.Opt.iter (Dom_html.document##getElementById (Js.string "btn_show_hint")) (
+    fun btn_show_hint -> Js.Opt.iter (Dom_html.document##getElementById (Js.string "nb_hint_see")) (
+      fun nb_hint_see-> Js.Opt.iter (Dom_html.document##getElementById (Js.string "hint_list")) (
+        fun ul_hint ->
+          btn_show_hint ## onclick <- Dom_html.handler (
+          fun _ ->
+            let li_hint_list = Misc.list_node_from_nodelist (ul_hint ## childNodes) in
+            (* find in the li list if one li is hidden *)
+            try
+              let li_hide =
+                List.find (
+                  fun el ->
+                    Js.Opt.case (Dom_html.CoerceTo.element el) (fun _ -> false) (
+                      fun el ->
+                        let s = el ## style in
+                        let v = Js.to_string (s ## visibility) in
+                        if v = "hidden" || v = "" then
+                          let nb_view = int_of_js_string (nb_hint_see ## innerHTML) in
+                          (if List.length li_hint_list > nb_view then
+                              nb_hint_see ## innerHTML <- (js_string_of_int (nb_view + 1))
+                            else
+                              btn_show_hint ## style ## display <- Js.string "none"
+                          );
+                          true
+                        else
+                          false
+                    )
+                  ) li_hint_list
+                in
+                Js.Opt.iter (Dom_html.CoerceTo.element li_hide) (
+                fun li_hide ->
+                  let s = li_hide ## style in
+                  s ## visibility <- Js.string "visible";
+                  s ## display <- Js.string "";
+                );
+                Js._false
+            with Not_found -> Js._false
+          )
+        )
+      )
+    )
+
   (* we can't use event_arrows here as cancel seems to be broken *)
-  let init challenge_id submit_solution_btn result_box submit_solution_service1 submit_solution_service2 = 
+  let init challenge_id submit_solution result_box hint_list submit_solution_service1 submit_solution_service2 = 
 
     let submit_handler =
       Dom_html.handler
         (fun ev -> 
-          Lwt.ignore_result (send_solution submit_solution_btn result_box submit_solution_service1 submit_solution_service2 challenge_id (evaluate ())) ; 
+          Lwt.ignore_result (send_solution submit_solution result_box submit_solution_service1 submit_solution_service2 challenge_id (evaluate ())) ; 
           Js._false) in
 
     let form = Eliom_client.Html5.of_element (Eliom_output.Html5_forms.post_form ~no_appl:true ~service:submit_solution_service1 solution_form challenge_id) in 
-    
     let _ = Dom_html.addEventListener form Dom_html.Event.submit submit_handler Js._false in 
 
-    build_solution_box challenge_id submit_solution_btn result_box  submit_solution_service1 submit_solution_service2 
-(*    let canceller = ref None in
+    let hint_list = div [
+      (match List.length hint_list with
+        | 0 -> div []
+        | n ->
+            div [
+              p [ pcdata (Printf.sprintf "The author enter %d hint." n)];
+              p ~a:([a_id "btn_show_hint"]) [ 
+                pcdata "Click here to see ";
+                span ~a:([a_id "nb_hint_see"]) [ pcdata "1" ];
+                pcdata (Printf.sprintf " on %d" n);
+              ]
+            ]);
+      ul ~a:([a_id "hint_list"]) (List.fold_left (
+          fun acc el -> 
+            li ~a:([a_style "display: none"]) [ pcdata el ] :: acc
+          ) [] hint_list)
+    ] in
 
-    let toggle =
-      Dom_html.handler
-        (fun _ ->  
-          (match !canceller with 
-              None -> ()
-            | Some c -> Dom_html.removeEventListener c) ; 
-          empty submit_solution_btn ; 
-          build_solution_box challenge_id submit_solution_btn submit_solution_service1 submit_solution_service2  ;
-          Js._false) in
-    (* canceller := Some (Event_arrows.run (Event_arrows.clicks submit_solution_btn (Event_arrows.arr toggle)) ()) ; *)
-    canceller := Some (Dom_html.addEventListener submit_solution_btn Dom_html.Event.click toggle Js._false)
-*) 
+    let hint_list = Eliom_client.Html5.of_element hint_list in
+
+    Dom.appendChild submit_solution hint_list;
+    add_event_on_hint_list ();
+    Dom.appendChild submit_solution form
+    (*     build_solution_box challenge_id submit_solution_btn result_box  submit_solution_service1 submit_solution_service2 *)
 }}
 
 (* handler *******************************************************************************)
@@ -152,6 +203,9 @@ let handler challenge_id _ =
   Persistency.S3.get challenge.description 
   >>= fun challenge_description ->
 
+  Misc.build_list_from_s3 Persistency.S3.get challenge.hints
+  >>= fun hint_list ->
+
   Activity.post (`Anonymous_viewing (challenge.title, challenge.uid)); 
  
   let headline = div ~a:[ a_id "challenge_descr" ] 
@@ -183,9 +237,10 @@ let handler challenge_id _ =
   Eliom_services.onload {{ 
     
     init 
-    %challenge_id 
+    %challenge_id
     (Eliom_client.Html5.of_element %submit_a_solution)
     (Eliom_client.Html5.of_element %result_box)
+    %hint_list
     %s1 %s2
 
   }} ; 

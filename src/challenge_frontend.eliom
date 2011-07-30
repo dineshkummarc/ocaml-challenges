@@ -28,7 +28,7 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
   let tags_list = Str.split regexp tags in
 
   let hints = Misc.filter_empty_string_from_list hints in
-  lwt s3_hints_list = Misc.build_s3_from_list Persistency.S3.set Uid.generate hints in
+  lwt s3_hints_list = Misc.build_s3_from_list Persistency.S3.set Uid.generate (List.rev hints) in
 
   let s3_description = Uid.generate () in
   let s3_control_code = Uid.generate () in

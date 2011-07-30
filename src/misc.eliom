@@ -94,6 +94,12 @@ let build_list_from_s3 s3_f l =
 
 open Lwt 
 
+let int_of_js_string s =
+  int_of_string (Js.to_string s)
+
+let js_string_of_int i =
+  Js.string (string_of_int i)
+
 let cancellable_iter active f s =
   let rec loop () =
     Lwt_stream.get s >>= function
@@ -111,5 +117,15 @@ let iter_for_page f s =
   let active = ref true in 
   ignore (cancellable_iter active f s) ; 
   Eliom_client.on_unload (fun () -> active := false)
+
+let list_node_from_nodelist nl =
+  let rec build_list acc nl nb =
+    Js.Optdef.case (nl ## item (nb))
+      (fun _ -> List.rev acc)
+      (fun el -> Js.Opt.case (Dom_html.CoerceTo.element el) 
+                  (fun _ -> List.rev acc)
+                  (fun el -> build_list (el :: acc) nl (nb + 1)));
+  in
+  build_list [] nl 0
 
 }}
