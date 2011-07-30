@@ -69,8 +69,9 @@ let get key =
            div markup
          ])
 
- let update_form (key,code, _) key update_service =
-   post_form ~no_appl:true ~service:update_service 
+ let update_form _ (key,code, _) key update_service =
+   return 
+     (post_form ~no_appl:true ~service:update_service 
       (fun diff -> 
         [
           div [
@@ -79,7 +80,7 @@ let get key =
           div [
             string_input ~input_type:`Submit ~value:"update" () 
           ]
-        ]) key     
+        ]) key)     
 }}
 
 {server{

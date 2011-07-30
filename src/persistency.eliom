@@ -53,9 +53,12 @@ module S3_cache = Ocsigen_cache.Make (struct type key = string type value = stri
     let get = s3_cache # find 
       
     let set key value = 
-    (*  store key value
-      >>= fun _ -> *) s3_cache # add key value ; return () 
+      store key value
+      >>= fun _ -> s3_cache # add key value ; return () 
         
+    let set_fresh value = 
+      let key = Uid.generate () in
+      set key value >>= fun _ -> return key
 
   end
 
@@ -63,17 +66,21 @@ module S3_cache = Ocsigen_cache.Make (struct type key = string type value = stri
 
 module type LS = 
   sig
+    type key = sdb_key
     type t deriving (Json)
-
+    type diff deriving (Json)
     val cache_size : int
     val domain : string 
 
     val __name__ : string 
 
     val uid : t -> sdb_key
+    val visible : t -> bool
     val of_sdb : (string * string) list -> t
     val to_sdb : t -> (string * string) list
-  end
+  
+    val update_diff : (string -> s3_path Lwt.t) -> t -> diff -> t Lwt.t 
+end
 
 
 module LFactory (L : LS) = 
@@ -83,7 +90,7 @@ module LFactory (L : LS) =
 
     type key = sdb_key
     type t = L.t 
-    type diff = L.t deriving (Json)
+    type diff = L.diff deriving (Json)
 
     let __name__ = L.__name__
 
@@ -96,7 +103,7 @@ module LFactory (L : LS) =
         | `Error _ -> fail Error
 
     let save value = 
-      SDB.put_attributes creds L.domain (L.uid value) (L.to_sdb value)
+      SDB.put_attributes ~replace:true creds L.domain (L.uid value) (L.to_sdb value)
       >>= function
         | `Ok -> return ()
         | `Error _ -> fail Error
@@ -107,21 +114,26 @@ module LFactory (L : LS) =
       cache # find key
         
     let update value = 
-      (* save value 
-      >>= function _ -> *)
+      save value 
+      >>= function _ ->
         let key = L.uid value in
         cache # remove key ; 
         cache # add key value ; 
         return () 
 
     let list () = 
-      cache # list ()
-
-    let update_diff key _ = 
-      failwith "not implemented" 
+      List.filter L.visible (cache # list ())
+      
+    let update_diff key diff = 
+      display "> got the diff" ;
+      cache # find key 
+      >>= fun value -> 
+      L.update_diff (S3.set_fresh) value diff
+      >>= fun value -> 
+      update value >>= fun _ -> return value
 
     let cardinal () = 
-      cache # size 
+      List.length (List.filter L.visible (cache # list ())) (* <- change that! *)
 
     let rec init ?(token=None) () = 
       SDB.select creds ("select * from " ^ L.domain)
@@ -130,16 +142,17 @@ module LFactory (L : LS) =
           (List.iter
              (fun (name, attrs) -> 
                try 
+              
                  (try Uid.tick (int_of_string name) with _ -> ()); 
                  let attrs = List.fold_left
                    (fun acc -> 
                      function 
-                       | label, None -> acc 
+                       | label, None -> (label, "") :: acc 
                        | label, Some v -> (label, v) :: acc) [] attrs in
                  let value = L.of_sdb attrs in
                  let key = L.uid value in 
                  cache # add key value 
-               with _ -> display "> discarding item %s from domain %s" name L.domain) elements ; 
+               with e -> display "> discarding item %s from domain %s: %s" name L.domain (Printexc.to_string e)) elements ; 
            match token with 
                None -> display "> loading domain %s done" L.domain ; return () 
              | Some _ as token -> init ~token ())
@@ -181,7 +194,7 @@ let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler
   open Lwt 
   
   let fetch_from_s3 service key = 
-    Eliom_client.call_caml_service ~service
+    Eliom_client.call_caml_service ~service key () 
 
 }}
 
@@ -199,13 +212,13 @@ let _ = Eliom_output.Caml.register Services.Hidden.s3_get s3_get_handler
     
     val __name__ : string 
       
-    val render_html5 : 'a -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
-    val update_form : t -> key ->
+    val render_html5 :  (Types.s3_path -> string Lwt.t) -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
+    val update_form : (Types.s3_path -> string Lwt.t) -> t -> key ->
       (string, diff, [< Eliom_services.post_service_kind ],
        [< Eliom_services.suff ], 'd,
        [< string Eliom_parameters.setoneradio ]
          Eliom_parameters.param_name, [< Eliom_services.registrable ], 'e)
-        Eliom_services.service -> [> HTML5_types.form ] Eliom_pervasives.HTML5.M.elt
+        Eliom_services.service -> [> HTML5_types.form ] Eliom_pervasives.HTML5.M.elt Lwt.t
 
     val uid : t -> key
     val build_diff : key -> diff Js.Opt.t

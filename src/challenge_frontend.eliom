@@ -6,6 +6,7 @@ open Eliom_output.Html5
 open Types
 
 open Challenge
+
 {client{
   open Challenge_client
 }}
@@ -38,7 +39,7 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
   let challenge = {
     uid;
     author ;
-    active = false ;
+    active = true ;
     submission_date = Date.now () ;
     title = title ;
     description = s3_description ;
@@ -56,6 +57,8 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
   Persistency.S3.set s3_control_code control_code >>= fun _ ->
   Persistency.S3.set s3_sample_solution sample_solution >>= fun _ ->
   Persistency.Challenges.update challenge >>= fun _ ->
+    let activity = if author = "" then `Anonymous_create (title, uid) else `Someone_create (author, title, uid) in
+    Activity.post activity;
     let c = unique (div []) in
     Eliom_services.onload {{
       init_visualisation %c %challenge %description %sample_solution %control_code %hints %signature

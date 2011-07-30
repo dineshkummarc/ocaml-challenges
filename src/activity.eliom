@@ -7,7 +7,9 @@ open Types
   type activity = [ `Anonymous_viewing of (string * sdb_key)
                   | `Someone_viewing of (string * string * sdb_key)
                   | `Anonymous_participating of (string * sdb_key) 
-                  | `Someone_participating of (string * string * sdb_key) ] deriving (Json)      
+                  | `Someone_participating of (string * string * sdb_key) 
+                  | `Anonymous_create of (string * sdb_key)
+                  | `Someone_create of (string * string * sdb_key)] deriving (Json)
 
 }}
 
@@ -63,7 +65,21 @@ open Types
               pcdata user ;
               pcdata " solved " ; 
               Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
-             ])in
+             ])
+        | `Anonymous_create (challenge_title, challenge_id) -> 
+          Eliom_client.Html5.of_element 
+            (div [ (* don't use space (), of_element does not know how to translate it *)
+              pcdata "Someone create " ; 
+              Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
+             ])
+        | `Someone_create (user, challenge_title, challenge_id) -> 
+          Eliom_client.Html5.of_element 
+            (div [ (* don't use space (), of_element does not know how to translate it *)
+              pcdata user ;
+              pcdata " create " ; 
+              Eliom_output.Html5.a ~service:view_challenge_service [ pcdata challenge_title ] challenge_id
+             ])
+        in
     
     let publish activity = 
       let box = render activity in 

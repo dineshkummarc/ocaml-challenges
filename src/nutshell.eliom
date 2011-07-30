@@ -5,6 +5,20 @@ open Eliom_output.Html5
 
 open Misc
 
+(* analytics 
+
+UA-24849261-1 *)
+
+let analytics = 
+ script ~a:[ a_mime_type "application/x-javascript" ]  (cdata_script ("var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '" ^ "UA-24849261-1" ^ "']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();"))
+
 {client{
 
   (* activity stuff *)
@@ -46,7 +60,7 @@ lwt contribute = Cms.get "contribute" in
             ] ; 
             header [
               hgroup 
-                (h1 [ pcdata "OCaml puzzles" ])
+                (h1 [ a Services.Frontend.home [ pcdata "OCaml puzzles" ] () ])
                 [
                   h4 [ 
                     span ~a:[ a_id "hdlineL" ] [ pcdata "handcrafted by the" ] ; 
@@ -92,6 +106,6 @@ lwt contribute = Cms.get "contribute" in
             pcdata "Initiated the 23th of July 2011 during the #0 OCaml Hackathon, in San Francisco, California"
           ] ; 
         ];
-        
+        analytics; 
       ]
     ) >>> return 

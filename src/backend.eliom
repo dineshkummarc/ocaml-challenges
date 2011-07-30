@@ -20,13 +20,13 @@ open Types
       type t 
       
       val __name__ : string 
-      val render_html5 : 'a -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
-      val update_form : t -> key ->
+      val render_html5 : (Types.s3_path -> string Lwt.t) -> t -> [ HTML5_types.div ] Eliom_pervasives.HTML5.M.elt Lwt.t 
+      val update_form :  (Types.s3_path -> string Lwt.t) -> t -> key ->
            (string, diff, [< Eliom_services.post_service_kind ],
             [< Eliom_services.suff ], 'd,
             [< string Eliom_parameters.setoneradio ]
             Eliom_parameters.param_name, [< Eliom_services.registrable ], 'e)
-           Eliom_services.service -> [> HTML5_types.form ] Eliom_pervasives.HTML5.M.elt
+           Eliom_services.service -> [> HTML5_types.form ] Eliom_pervasives.HTML5.M.elt Lwt.t
 
       val build_diff : key -> diff Js.Opt.t
       val uid : t -> key
@@ -50,22 +50,25 @@ open Types
           
             let box_elt = Eliom_client.Html5.of_div box in
             let update_handler _ = 
-              let edit_form = Eliom_client.Html5.of_form (E.update_form elt (E.uid elt) (Obj.magic update_service)) in
-              edit_form##onsubmit <- Dom_html.handler
-                (fun _ -> 
-                  Js.Opt.iter
-                    (E.build_diff (E.uid elt))
-                    (fun diff -> Lwt.ignore_result 
-                      (
-                        Dom.removeChild container edit_form ; 
-                        Eliom_client.call_caml_service update_service (E.uid elt) diff 
-                        >>= build_bloc)) ;
-                  Js._false) ;  
-
-              Dom.removeChild container box_elt ; 
-              Dom.appendChild container edit_form ; 
-              
-              Js._false in
+              Lwt.ignore_result 
+                (E.update_form s3_service elt (E.uid elt) (Obj.magic update_service)
+                 >>= fun f -> 
+                 let edit_form = Eliom_client.Html5.of_form f in
+                 edit_form##onsubmit <- Dom_html.handler
+                   (fun _ -> 
+                     Js.Opt.iter
+                       (E.build_diff (E.uid elt))
+                       (fun diff -> Lwt.ignore_result 
+                         (
+                           Dom.removeChild container edit_form ; 
+                           Eliom_client.call_caml_service update_service (E.uid elt) diff 
+                           >>= build_bloc)) ;
+                     Js._false) ;  
+                 
+                 Dom.removeChild container box_elt ; 
+                 Dom.appendChild container edit_form ; return () );  
+                 
+                 Js._false in
 
             box_elt ## onclick <- Dom_html.handler update_handler ;
             Dom.appendChild container box_elt ; 
@@ -122,6 +125,7 @@ module Viz (E : ELT) =
       E.update_diff key value 
 
     let handler_fallback _ _ = Nutshell.home [ h2 [ pcdata "You're lost - or I am!" ]]
+
     let _ = 
       Eliom_output.Caml.register service_get handler_get ; 
       Appl.register service_update_fallback handler_fallback ;
@@ -150,7 +154,7 @@ let home_handler _ _ =
     (Eliom_client.Html5.of_element %VChallenges.elt_container) 
     (Eliom_client.Html5.of_element %VChallenges.menu_container)
     %VChallenges.service_get
-    %Services.Hidden.s3_get
+    (Persistency.fetch_from_s3 %Services.Hidden.s3_get)
     %VChallenges.service_update }} in 
 
   let onload_solutions = {{
@@ -158,7 +162,7 @@ let home_handler _ _ =
     (Eliom_client.Html5.of_element %VSolutions.elt_container) 
     (Eliom_client.Html5.of_element %VSolutions.menu_container)
     %VSolutions.service_get
-    %Services.Hidden.s3_get
+    (Persistency.fetch_from_s3 %Services.Hidden.s3_get)
     %VSolutions.service_update }} in 
 
   let onload_cms = {{
@@ -166,7 +170,7 @@ let home_handler _ _ =
     (Eliom_client.Html5.of_element %VCms.elt_container) 
     (Eliom_client.Html5.of_element %VCms.menu_container)
     %VCms.service_get
-    %Services.Hidden.s3_get
+    (Persistency.fetch_from_s3 %Services.Hidden.s3_get)
     %VCms.service_update }} in 
 
   Eliom_services.onload onload_challenges ;

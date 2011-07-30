@@ -3,7 +3,7 @@
 open Lwt
 open Misc
 open Types
-
+(*
 let _ = 
   display "> inserting dummy values" ; 
   let open Challenge in 
@@ -38,7 +38,8 @@ let _ =
           } in
           Persistency.Challenges.update c1
         )
-      
+*)
+
 (*
 
 let _ = 

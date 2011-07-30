@@ -23,7 +23,7 @@
           ];
         ) [
           tr [
-            td [ label ~a:([a_for "author_challenge"]) [ pcdata "Author" ]; ];
+            td [ label ~a:([a_for "author_challenge"]) [ pcdata "Your name (or pseudo)" ]; ];
             td ~a:([a_colspan 2]) [ string_input ~a:([a_id "author_challenge"; a_required `Required]) ~input_type:`Text ~name:author () ; ];
           ];
           tr [
@@ -38,7 +38,7 @@
             td ~a:([a_colspan 2]) [ textarea ~a:([ a_id "desc_challenge"; a_required `Required]) ~rows:10 ~cols:50 ~name:description () ; ];
           ];
           tr [
-            td [ label ~a:([a_for "control_code_challenge"]) [ pcdata "Controle code" ]; ];
+            td [ label ~a:([a_for "control_code_challenge"]) [ pcdata "Control code" ]; ];
             td ~a:([a_colspan 2]) [ textarea ~a:([ a_id "control_code_challenge"; a_required `Required ]) ~rows:25 ~cols:50 ~name:control_code () ; ];
           ];
           tr [
@@ -46,7 +46,7 @@
             td ~a:([a_colspan 2]) [ textarea ~a:([a_id "solution_sample_code"; a_required `Required ]) ~rows:25 ~cols:50 ~name:sample_solution () ; ];
           ];
           tr [
-            td ~a:([a_style "vertical-align:top"]) [ span [ pcdata "Some hints" ]; ];
+            td ~a:([a_style "vertical-align:top"]) [ span [ pcdata "Some hints (optional)" ]; ];
             td ~a:([a_style "width: 400px"]) [ 
                 ul ~a:([a_id "hints_challenge"])  [
                   li [ raw_input ~a:([a_id "first_hint_challenge"]) ~input_type:`Text ~name:"hints.value[0]" () ];
@@ -55,7 +55,7 @@
             td ~a:([a_style "vertical-align:bottom"]) [ button ~a:([a_id "add_hint"]) ~button_type:`Button [ span [ pcdata "Add"] ] ];
           ];
           tr [
-            td [ label ~a:([a_for "tags_challenge"]) [ pcdata "tags" ] ; ];
+            td [ label ~a:([a_for "tags_challenge"]) [ pcdata "Tags" ] ; ];
             td ~a:([a_colspan 2]) [ string_input ~a:([ a_id "tags_challenge" ]) ~input_type:`Text ~name:tags () ; ];
           ];
           tr [
@@ -78,11 +78,16 @@
               li [ pcdata "State a precise description of the problem. The actual signature of the solution will be inferred from the control code" ] ; 
               li [ pcdata "If the expected solution has type `a -> `b, your control code should have signature: "; br () ; 
                    div ~a:[ a_class [ "centered" ]] [ pcdata "val benchmark : (`a -> `b) -> [ `Success of int * string | `Failure of string ]" ]] ;
-              li [ pcdata "In case of success, the integer returned is a mark, and the higher the better (used to rank solutions)" ] 
+              li [ pcdata "In case of success, the integer returned is a mark, and the higher the better (used to rank solutions)" ] ; 
+              li [ pcdata "You also have to enter a solution (at least a piece of code that can be benchmarked, even if the result is `Failure, and it has to have the following signature:"  ; br () ; 
+                    div ~a:[ a_class [ "centered" ]] [ pcdata "val main : `a -> `b" ]] ;
             ]
           ] ;
-        post_form ~a:[ a_id "create_challenge_form" ] ~no_appl:true ~service:s_challenge_new new_challenge_form ()
-      ]
+        div ~a:[ a_class [ "your_challenge" ]] [
+          h3 [ pcdata "Your challenge" ] ;
+          post_form ~a:[ a_id "create_challenge_form" ] ~no_appl:true ~service:s_challenge_new new_challenge_form ()
+        ]
+        ] 
     in
 
     Dom.appendChild container (Eliom_client.Html5.of_element content);
@@ -220,12 +225,18 @@
       List.fold_left (
         fun acc el ->
           li [ pcdata el ] :: acc
-      ) [] hint_list
+      ) [] (List.rev hint_list)
     in
     let tags_list = String.concat "; " challenge.tags in
     let content = 
-      div ~a:([ a_id "challenge_overview" ]) [
-        h2 [ pcdata challenge.title ];
+      div [
+        div ~a:[ a_id "submission_thanks" ] [
+          h2 [ pcdata "Thanks for your contribution" ] ; 
+          span [ pcdata "Below is the summary of your challenge." ] 
+            
+        ] ; 
+        div ~a:([ a_id "challenge_overview" ]) [
+        h3 [ pcdata challenge.title ];
         table (
           tr [ 
               td [ pcdata "Author" ];
@@ -243,7 +254,7 @@
               ];
               tr [ td [ pcdata "Tags" ]; td [ span [ pcdata (match tags_list with "" -> "No tags entered" | _ -> tags_list) ]]]
           ]
-      ] in
+        ]] in
     Dom.appendChild (Eliom_client.Html5.of_element container) (Eliom_client.Html5.of_element content)
 
 }}
