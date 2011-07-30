@@ -51,6 +51,9 @@
   let uid t = 
     t.uid
 
+      
+  let visible t = 
+    false
 }}
 
 {client{
@@ -61,7 +64,7 @@
 
 
 
-let update_diff value diff =
+let update_diff _ value diff =
   return value
 
 open Misc

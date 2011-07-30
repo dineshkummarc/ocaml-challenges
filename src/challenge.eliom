@@ -59,14 +59,15 @@
       | 0 -> []
       | n -> caml :: (gen_camels (n-1)) in
 
-    return (div ~a:[ a_class [ "challenge_short" ]]
-              [
-                span ~a:[ a_class [ "challenge_short_title" ]] [ pcdata t.title ] ; 
-                span ~a:[ a_class [ "challenge_short_author" ]] [ pcdata "by " ; pcdata t.author ] ; 
-                div ~a:[ a_class [ "challenge_short_difficulty" ]] (gen_camels t.difficulty)  ;
-                div ~a:[ a_class [ "clearall" ]] []; 
-              ])
-
+    return 
+      (div ~a:[ a_class [ "challenge_short" ]]
+         [
+           span ~a:[ a_class [ "challenge_short_title" ]] [ pcdata t.title ] ; 
+           span ~a:[ a_class [ "challenge_short_author" ]] [ pcdata "by " ; pcdata t.author ] ; 
+           div ~a:[ a_class [ "challenge_short_difficulty" ]] (gen_camels t.difficulty)  ;
+           div ~a:[ a_class [ "clearall" ]] []; 
+         ])
+      
 
   let update_form s3get v key update_service =
     
@@ -82,18 +83,16 @@
         int_input ~a:[ a_id (key ^ "__" ^ field) ] ~value ~input_type:`Text () 
       ] in
 
-
     let textarea_field field value =
       div [
         label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
         raw_textarea ~name:"blob" ~rows:30 ~cols:60 ~value ~a:[ a_id (key ^ "__" ^ field) ] () 
       ] in
 
-
     let bool_field field checked =
       div [
         label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
-        raw_checkbox ~a:[ a_id (key ^ "__" ^ field) ] ~name: "bloby" ~value: (if checked then "checked" else "") () 
+        raw_checkbox ~a:[ a_id (key ^ "__" ^ field) ] ~name: "bloby" ~checked ~value:"" () 
       ] in
         
     s3get v.description 
@@ -117,19 +116,37 @@
               textarea_field "control_code" control_code ; 
               textarea_field "sample_solution" sample_solution ; 
               
-          div [
-            string_input ~input_type:`Submit ~value:"update" () 
-          ]
-            
+              div [
+                string_input ~input_type:`Submit ~value:"update" () 
+              ]
+                
             ]) key)
       
   let uid t = 
     t.uid
       
+  let visible t = 
+    t.active
 }}
 
-let update_diff value diff =
-  return value
+let update_diff s3_store value diff =
+  s3_store diff.d_description 
+  >>= fun description -> 
+  s3_store diff.d_sample_solution 
+  >>= fun sample_solution ->
+  s3_store diff.d_control_code 
+  >>= fun control_code -> 
+  return 
+    {
+      value with
+        author = diff.d_author ;
+        difficulty= diff.d_difficulty ;
+        active = diff.d_active ; 
+        title = diff.d_title ; 
+        description ; 
+        sample_solution ; 
+        control_code ;
+    }
 
 {client{
   open Misc
@@ -177,7 +194,6 @@ let update_diff value diff =
                                      (gid "sample_solution")
                                      (Dom_html.CoerceTo.textarea))
                                   (fun sample_solution -> 
-                                    alert "we have everything :)" ;
                                     let diff = 
                                       {
                                         d_author = Js.to_string author ## value ; 
@@ -191,7 +207,6 @@ let update_diff value diff =
                                         d_sample_solution = Js.to_string sample_solution ## value ; 
                                         d_control_code = Js.to_string control_code ## value ;
                                       } in 
-                                    alert "diff built" ;
                                     Js.some diff 
                                   )
                               )

@@ -56,6 +56,9 @@ module S3_cache = Ocsigen_cache.Make (struct type key = string type value = stri
     (*  store key value
       >>= fun _ -> *) s3_cache # add key value ; return () 
         
+    let set_fresh value = 
+      let key = Uid.generate () in
+      set key value >>= fun _ -> return key
 
   end
 
@@ -72,10 +75,11 @@ module type LS =
     val __name__ : string 
 
     val uid : t -> sdb_key
+    val visible : t -> bool
     val of_sdb : (string * string) list -> t
     val to_sdb : t -> (string * string) list
   
-    val update_diff : t -> diff -> t Lwt.t 
+    val update_diff : (string -> s3_path Lwt.t) -> t -> diff -> t Lwt.t 
 end
 
 
@@ -118,16 +122,18 @@ module LFactory (L : LS) =
         return () 
 
     let list () = 
-      cache # list ()
+      List.filter L.visible (cache # list ())
       
     let update_diff key diff = 
       display "> got the diff" ;
       cache # find key 
       >>= fun value -> 
-      L.update_diff value diff
+      L.update_diff (S3.set_fresh) value diff
+      >>= fun value -> 
+      update value >>= fun _ -> return value
 
     let cardinal () = 
-      cache # size 
+      List.length (List.filter L.visible (cache # list ())) (* <- change that! *)
 
     let rec init ?(token=None) () = 
       SDB.select creds ("select * from " ^ L.domain)
