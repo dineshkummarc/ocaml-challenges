@@ -231,7 +231,7 @@ div.challenge_short div.challenge_short_difficulty {
 
 /* challenge creation ************************************************************************/
 
-div#challenge_instruction h3{
+div#challenge_instruction h3 {
     padding-top: 20px; 
 }
 
@@ -244,10 +244,10 @@ form#create_challenge_form input, form#create_challenge_form textarea {
   width: 370px;
   border-radius: 10px;
   margin-bottom: 7px;
-   font-size: 16px ;
-   padding-left: 10px; 
-   padding-top: 5px; 
-   padding-bottom: 5px; 
+  font-size: 16px ;
+  padding-left: 10px; 
+  padding-top: 5px; 
+  padding-bottom: 5px; 
 }
 
 form#create_challenge_form textarea {
@@ -274,6 +274,28 @@ ul#hints_challenge {
 
 ul#hints_challenge input {
   width: 350px;
+}
+
+/* backend challenge ************************************************************************/
+
+table.backend_table input, table.backend_table textarea {
+  width: 370px;
+  border-radius: 10px;
+  margin-bottom: 7px;
+  font-size: 16px ;
+  padding-left: 10px; 
+  padding-top: 5px; 
+  padding-bottom: 5px;
+}
+
+form.backend_table textarea {
+  border-style: ridge;
+  border-width: 2px;
+}
+
+table.backend_table input[type="submit"] {
+  width: 100px;
+  margin-left: 570px; 
 }
 
 /* challenge overview ***********************************************************************/

@@ -51,13 +51,14 @@
         facebook_id : string ;
       } deriving (Json)
         
-        
+
   let render_html5 get_s3 t = 
 
     let caml = img ~src:"/img/thumb_camel.png" ~alt:(Printf.sprintf "difficulty is %d" t.difficulty) () in 
     let rec gen_camels = function 
       | 0 -> []
-      | n -> caml :: (gen_camels (n-1)) in
+      | n -> (caml :: (gen_camels (n-1)))
+    in
 
     return 
       (div ~a:[ a_class [ "challenge_short" ]]
@@ -67,32 +68,32 @@
            div ~a:[ a_class [ "challenge_short_difficulty" ]] (gen_camels t.difficulty)  ;
            div ~a:[ a_class [ "clearall" ]] []; 
          ])
-      
+  
 
   let update_form s3get v key update_service =
     
     let string_field field value =
-      div [
-        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
-        string_input ~a:[ a_id (key ^ "__" ^ field) ] ~value ~input_type:`Text () 
+      tr [
+        td [ label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ; ];
+        td [ string_input ~a:[ a_id (key ^ "__" ^ field) ] ~value ~input_type:`Text ()  ];
       ] in
 
     let int_field field value =
-      div [
-        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
-        int_input ~a:[ a_id (key ^ "__" ^ field) ] ~value ~input_type:`Text () 
+      tr [
+        td [ label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ; ];
+        td [ int_input ~a:[ a_id (key ^ "__" ^ field) ] ~value ~input_type:`Text () ];
       ] in
 
     let textarea_field field value =
-      div [
-        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
-        raw_textarea ~name:"blob" ~rows:30 ~cols:60 ~value ~a:[ a_id (key ^ "__" ^ field) ] () 
+      tr [
+        td [label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;];
+        td [raw_textarea ~name:"blob" ~rows:30 ~cols:60 ~value ~a:[ a_id (key ^ "__" ^ field) ] ()]
       ] in
 
     let bool_field field checked =
-      div [
-        label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;  
-        raw_checkbox ~a:[ a_id (key ^ "__" ^ field) ] ~name: "bloby" ~checked ~value:"" () 
+      tr [
+        td [label ~a:[ a_for (key ^ "__" ^ field) ] [ pcdata field ] ;];
+        td [raw_checkbox ~a:[ a_id (key ^ "__" ^ field) ] ~name: "bloby" ~checked ~value:"" () ]
       ] in
         
     s3get v.description 
@@ -106,20 +107,17 @@
       (
         post_form update_service 
           (fun _ -> 
-            [ 
-              string_field "author" v.author ; 
-              bool_field "active" v.active ;
-              string_field "title" v.title ; 
-              string_field "signature" v.signature ; 
-              int_field "difficulty" v.difficulty ; 
-              textarea_field "description" description ; 
-              textarea_field "control_code" control_code ; 
-              textarea_field "sample_solution" sample_solution ; 
-              
-              div [
-                string_input ~input_type:`Submit ~value:"update" () 
+            [
+              table ~a:([a_class ["backend_table"]]) (string_field "author" v.author) [
+                bool_field "active" v.active ;
+                string_field "title" v.title ; 
+                string_field "signature" v.signature ; 
+                int_field "difficulty" v.difficulty ; 
+                textarea_field "description" description ; 
+                textarea_field "control_code" control_code ; 
+                textarea_field "sample_solution" sample_solution ;
+                tr [ td ~a:([a_colspan 2])[ string_input ~input_type:`Submit ~value:"update" ()  ]]
               ]
-                
             ]) key)
       
   let uid t = 
