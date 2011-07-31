@@ -143,6 +143,16 @@ open HTML5.M
     (*     build_solution_box challenge_id submit_solution_btn result_box  submit_solution_service1 submit_solution_service2 *)
 }}
 
+(* ranking utils *************************************************************************)
+
+let top5 = 
+  let rec get n l = 
+    match n, l with 
+        0, _ -> []
+      | _, [] -> []
+      | n, (t::q) -> t:: (get (n-1) q) in 
+  get 5
+
 (* handler *******************************************************************************)
 
 open Challenge
@@ -154,7 +164,8 @@ let handler_check challenge_id (name, source) =
   let content_path = Uid.generate () in 
   Persistency.S3.set content_path source 
   >>= fun _ -> 
-
+  display "solution contributed by %s" name ; 
+  
   let solution = 
     let open Solution in 
         {
@@ -163,9 +174,11 @@ let handler_check challenge_id (name, source) =
           challenge_id ; 
           date = Date.now () ; 
           content = content_path ; 
-          status = `Pending ;
+          status = `Failed ("", "") ;
         } in 
-
+    display "solution %s contributed by %s" solution.Solution.uid name ; 
+    (if true then failwith "jmp") ;
+ 
     Persistency.Solutions.update solution 
     >>= fun _ -> 
     
@@ -173,10 +186,34 @@ let handler_check challenge_id (name, source) =
     (fun () -> 
       Interpreter.run_benchmark challenge source 
         >>= function 
-          | `Success _ as r -> Activity.post
-            (match name with 
-                "" -> `Anonymous_participating (challenge.title, challenge.uid) 
-              | _ as name -> `Someone_participating (name, challenge.title, challenge.uid)) ; return r
+          | `Success (score, _) as r -> 
+            let solution = let open Solution in { solution with status = `Score score } in 
+                           Persistency.Solutions.update solution >>= fun _ -> 
+          
+                           let rec insert_ordered e l = 
+                             match l with 
+                                 [] -> return [ e.Solution.uid ]
+                               | t::q -> 
+                                 Persistency.Solutions.get t >>= fun solution -> 
+                                 match solution.Solution.status, e.Solution.status with 
+                                     `Score s1, `Score s2 -> 
+                                       (if s1 > s2 then
+                                           (insert_ordered e q) >>= fun ls -> return (t::ls) 
+                                        else 
+                                           (insert_ordered solution q) >>= fun ls -> return (e.Solution.uid ::ls))
+                                   | _, `Score _ -> return (e.Solution.uid :: t :: q)
+                                   | _, _ -> insert_ordered e q >>= fun ls -> return (t::ls) in
+                           
+                           insert_ordered solution challenge.Challenge.submitted_solutions
+                           >>= fun submitted_solutions -> 
+                           display "> new ordered list: %s" (String.concat " " submitted_solutions) ; 
+                           let challenge = let open Challenge in { challenge with submitted_solutions } in
+                                           Persistency.Challenges.update challenge 
+                                           >>= fun _ -> 
+                                           Activity.post
+                                             (match name with 
+                                                 "" -> `Anonymous_participating (challenge.title, challenge.uid) 
+                                               | _ as name -> `Someone_participating (name, challenge.title, challenge.uid)) ; return r
           | _ as r -> return r)
     (fun e -> return (`Panic (Printf.sprintf "Ooops, exception caught: %s" (Printexc.to_string e))))
   
@@ -204,7 +241,8 @@ let handler challenge_id _ =
       b [ pcdata "Puzzle description:" ] ; 
       pcdata " "; 
       pcdata challenge_description
-    ] in 
+    ] in
+  
   let signature = div ~a:[ a_id "challenge_descr_signature" ] 
     [ 
       b [ pcdata "Expected solution signature:" ] ;
@@ -212,6 +250,17 @@ let handler challenge_id _ =
       pcdata challenge.signature
     ] in 
   let submit_a_solution = unique (div []) in
+
+  let top5 = top5 challenge.submitted_solutions in
+  
+  Lwt_list.map_s (fun sdb_key -> Persistency.Solutions.get sdb_key >>= fun solution -> match solution.Solution.author with "" -> return "Anonymous" | author -> return author) top5 
+  >>= fun top5_authors -> 
+  
+  let ranking = 
+    div ~a:[ a_id "ranking" ]
+      [ 
+        h3 [ pcdata "Top solvers" ] ; 
+        ol (List.map (fun author -> li ~a:[ a_class [ "top_solver_author" ]] [ pcdata author ]) top5_authors) ] in
   
   (* hack to overcome explicit typing ... *)
   let s1 = Services.Frontend.solution_check in 
@@ -233,7 +282,11 @@ let handler challenge_id _ =
   Nutshell.home
     [
       headline; 
-      description ; 
+      div ~a:[ a_id "challenge_header" ] [ 
+        description ;
+        ranking ;
+        div ~a:[ a_class [ "clearall" ]] [] ;
+      ] ; 
       signature ; 
       div ~a:[ a_id "solution_box" ] [ result_box ; 
                                        h2 [ pcdata "Your solution" ] ; 

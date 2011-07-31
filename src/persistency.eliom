@@ -161,11 +161,11 @@ module LFactory (L : LS) =
           Lwt_unix.sleep 5.0 >>= init ~token
 
             
- (* to be removed *)
-
+    (* to be removed *)
+            
     let create_domain () = 
       SDB.create_domain creds L.domain >>= fun _ -> return ()
-                        
+      
   end
 
 module Challenges = LFactory (Challenge)
@@ -173,11 +173,33 @@ module Solutions = LFactory (Solution)
 
 
 (* bootstraping ****************************************************************************************)
-
-
+(*
+let rec insert_ordered e l = 
+  match l with 
+      [] -> [ e.Solution.uid ]
+    | t::q when  e.Solution.score >= t.Solution.score -> e.Solution.uid :: t :: q
+    | t::q -> t:: (insert_ordered e q)
+*)
 let _ = 
   Lwt_main.run (Challenges.init ()) ;
   Lwt_main.run (Solutions.init ()) ; 
+  (* this code is TO BE REMOVED *)
+  let all_solutions = Solutions.list () in 
+ 
+  display "> %d solutions in db" (List.length all_solutions) ; 
+(*  
+  Lwt_main.run (
+    Lwt_list.iter_s
+      (fun solution -> 
+        let challenge_id = solution.Challenge.challenge_id in 
+        Challenges.get challenge_id 
+        >>= fun challenge -> 
+        let open Challenge in 
+            let nchallenge = { challenge with submitted_solutions = insert_ordered solution challenge.submitted_solutions } in
+      ) all_solutions 
+  ); 
+*)  
+
   Uid.unlock () 
 
 

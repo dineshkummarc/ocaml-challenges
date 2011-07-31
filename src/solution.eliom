@@ -24,7 +24,7 @@
         date : Date.t ; 
         
         content : s3_path ;
-        
+ 
         status : status ; 
       } deriving (Json)
 
