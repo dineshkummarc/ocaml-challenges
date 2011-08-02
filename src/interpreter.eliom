@@ -43,7 +43,14 @@ let at_exit = ()
 let do_at_exit = ()
 
 module Unix = struct
- let empty = ()
+
+  let time = Unix.time
+  let gettimeofday = Unix.gettimeofday
+  let gmtime = Unix.time 
+  let times = Unix.times
+  type process_times = Unix.process_times
+  type tm = Unix.tm 
+
 end
 
 module Pervasives = struct let empty = () end 
@@ -121,7 +128,7 @@ let run_benchmark challenge solution =
                ~timeout 
                ~stdout: `Keep 
                ~stderr: (`FD_move oc)
-               (ocamlfind, [| ocamlfind; "ocamlopt" ; "-package" ; "yojson"; source; "-o"; binary; "-linkpkg" |])
+               (ocamlfind, [| ocamlfind; "ocamlopt" ; "-package" ; "yojson,unix"; source; "-o"; binary; "-linkpkg" |])
              >>= function 
                | Unix.WEXITED 0 -> (* ok, compilation went fine, now we run *)
                  (with_temporary 
@@ -205,7 +212,7 @@ let read_annot source file (l1, c1) (l2, c2)  =
     
   
   let check_and_infer_signature control_code solution = 
-          with_temporary 
+    with_temporary 
     (fun source -> 
      (* generate source file *)
      lwt oc = Lwt_io.open_file ~mode:Lwt_io.output source in 
@@ -237,11 +244,12 @@ let read_annot source file (l1, c1) (l2, c2)  =
          let ic, oc = Unix.pipe () in (* might be correct here, after all *)
          finalize 
            (fun () -> 
-             Lwt_process.exec
+             catch 
+               (fun () -> Lwt_process.exec
                ~timeout 
                ~stdout: `Keep 
                ~stderr: (`FD_move oc)
-               (ocamlfind, [| ocamlfind; "ocamlopt" ; "-annot"; "-package" ; "yojson"; source; "-o"; binary; "-linkpkg" |])
+               (ocamlfind, [| ocamlfind; "ocamlopt" ; "-annot"; "-package" ; "yojson,unix"; source; "-o"; binary; "-linkpkg" |])
              >>= function 
                | Unix.WEXITED 0 -> (* ok, compilation went fine, now we run *)
                  (with_temporary 
@@ -263,8 +271,7 @@ let read_annot source file (l1, c1) (l2, c2)  =
                               return (`Signature ("val main : " ^ signature)))
                             (function
                                 | End_of_file -> return (`Invalid_code "no function called benchmark detected")
-                                | e -> fail e))
-                            
+                                | e -> fail e))                            
                       | _ -> (* oops, execution failed, should never happen *)
                         return (`Panic "sorry, the benchmark couldn't be run")
                     )
@@ -276,6 +283,7 @@ let read_annot source file (l1, c1) (l2, c2)  =
                  let i = ref 0 in 
                  while (i := Unix.read ic t 0 1024; !i > 0) do Buffer.add_string buf (String.sub t 0 !i) done ; 
                  return (`Invalid_code (Buffer.contents buf)))
+               (fun e -> return (`Invalid_code (Printexc.to_string e))))
 
            (fun () -> Unix.close ic; (* Lwt_io.close (Lwt_io.of_unix_fd ~mode:Lwt_io.output oc) *) return () )))
     
