@@ -82,7 +82,8 @@ let decode json_file =
 
 let run_benchmark challenge solution = 
   Persistency.S3.get challenge.Challenge.control_code 
-  >>= fun control_code -> 
+  >>= fun control_code ->
+  display "control code: %s" control_code ;
   with_temporary 
     (fun source -> 
      (* generate source file *)

@@ -85,7 +85,7 @@ let get key =
 
 {server{
 
-  let list () = 
+  let list ?(all=true) () = 
     cache # list ()
 
   let update_diff key markup = 

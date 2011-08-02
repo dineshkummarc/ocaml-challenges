@@ -13,4 +13,5 @@ let generate () =
 
 
 let unlock () = 
+  counter := !counter + 1000 ; 
   ready := true 

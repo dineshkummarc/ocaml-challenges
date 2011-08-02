@@ -101,7 +101,7 @@ module type ELT =
     type t
       
     val __name__ : string
-    val list : unit -> t list
+    val list : ?all:bool -> unit -> t list
       
     val update_diff : key -> diff -> t Lwt.t
   end
@@ -119,7 +119,7 @@ module Viz (E : ELT) =
     let service_update = post_service service_update_fallback (caml "value" (Json.t< E.diff> )) () 
             
     let handler_get () () = 
-      return (E.list ())
+      return (E.list ~all:true ())
 
     let handler_update key value = 
       E.update_diff key value 

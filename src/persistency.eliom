@@ -106,7 +106,7 @@ module LFactory (L : LS) =
       SDB.put_attributes ~replace:true creds L.domain (L.uid value) (L.to_sdb value)
       >>= function
         | `Ok -> return ()
-        | `Error _ -> fail Error
+        | `Error (_, s) -> display "> save error: %s" s ; fail Error
 
     let cache = new C.cache load L.cache_size
 
@@ -114,6 +114,7 @@ module LFactory (L : LS) =
       cache # find key
         
     let update value = 
+      display "CALLING UPDATE VALUE" ; 
       save value 
       >>= function _ ->
         let key = L.uid value in
@@ -121,9 +122,11 @@ module LFactory (L : LS) =
         cache # add key value ; 
         return () 
 
-    let list () = 
-      List.filter L.visible (cache # list ())
-      
+    let list ?(all=false) () = 
+      match all with 
+          false -> List.filter L.visible (cache # list ())
+        | true -> cache # list () 
+
     let update_diff key diff = 
       display "> got the diff" ;
       cache # find key 

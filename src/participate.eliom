@@ -164,7 +164,6 @@ let handler_check challenge_id (name, source) =
   let content_path = Uid.generate () in 
   Persistency.S3.set content_path source 
   >>= fun _ -> 
-  display "solution contributed by %s" name ; 
   
   let solution = 
     let open Solution in 
@@ -176,9 +175,8 @@ let handler_check challenge_id (name, source) =
           content = content_path ; 
           status = `Failed ("", "") ;
         } in 
-    display "solution %s contributed by %s" solution.Solution.uid name ; 
-    (if true then failwith "jmp") ;
- 
+    display "solution %s on path %s contributed by %s" solution.Solution.uid content_path name ; 
+     
     Persistency.Solutions.update solution 
     >>= fun _ -> 
     
