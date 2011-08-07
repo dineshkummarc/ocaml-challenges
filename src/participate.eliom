@@ -232,12 +232,14 @@ let handler challenge_id _ =
       span ~a:[ a_class [ "challenge_descr_title" ]] [ pcdata challenge.title ] ; 
       span ~a:[ a_class [ "challenge_descr_author" ]] [ pcdata "by " ; pcdata challenge.author] ; 
     ] in 
-  
+
+  Cms.render challenge_description 
+  >>= fun wiki_descr -> 
   let description = div ~a:[ a_id "challenge_descr_description" ] 
     [ 
       b [ pcdata "Puzzle description:" ] ; 
       pcdata " "; 
-      pcdata challenge_description
+div wiki_descr ;
     ] in
   
   let signature = div ~a:[ a_id "challenge_descr_signature" ] 

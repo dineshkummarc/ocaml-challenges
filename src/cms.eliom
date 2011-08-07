@@ -15,6 +15,8 @@ let dummy_box_info =
     bi_menu_style = `None ; 
   }
 
+let render = Wiki_syntax.xml_of_wiki Wiki_syntax.wikicreole_parser dummy_box_info
+  
 let load key = 
   catch 
     (fun _ -> Persistency.S3.load key)

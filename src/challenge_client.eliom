@@ -34,7 +34,7 @@
             td ~a:([a_colspan 2]) [ int_input ~a:([a_id "difficulty_slider"; a_step 1.0; a_input_max 10; a_input_min 1 ]) ~input_type:`Range ~value:5 ~name:difficulty (); ];
           ];
           tr [
-            td [ label ~a:([a_for "desc_challenge"]) [ pcdata "Describe your problem" ]; ];
+            td [ label ~a:([a_for "desc_challenge"]) [ pcdata "Describe your problem (wikicreole enabled)" ]; ];
             td ~a:([a_colspan 2]) [ textarea ~a:([ a_id "desc_challenge"; a_required `Required]) ~rows:10 ~cols:50 ~name:description () ; ];
           ];
           tr [
