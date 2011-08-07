@@ -74,6 +74,7 @@ let compute_score () =
   let solutions = Persistency.Solutions.list () in 
   Lwt_list.iter_s 
     (fun solution -> 
+      display "> investing solution %s" (Solution.uid solution) ;
       Persistency.Challenges.get solution.Solution.challenge_id 
       >>= fun challenge -> 
       Persistency.S3.get solution.Solution.content 
@@ -88,11 +89,14 @@ let compute_score () =
       let solution = let open Solution in { solution with status } in 
                      Persistency.Solutions.update solution
                      >>= fun _ -> (* now we insert *)
-                     let current_solutions = challenge.Challenge.submitted_solutions in 
+                     Persistency.S3.get challenge.Challenge.submitted_solutions 
+                     >>= Misc.s3_to_string_list 
+                     >>= fun current_solutions ->
                      insert_ordered solution current_solutions
                      >>= fun submitted_solutions -> 
-                     let challenge = let open Challenge in { challenge with submitted_solutions } in
-                                     Persistency.Challenges.update challenge) solutions 
+                     Persistency.S3.set challenge.Challenge.submitted_solutions (string_list_to_s3 submitted_solutions)
+
+) solutions 
 
 
 module StringSet = Set.Make (String)
@@ -108,28 +112,75 @@ let clean_list () =
   let challenges = Persistency.Challenges.list () in 
   Lwt_list.iter_s
     (fun challenge -> 
-      let submitted_solutions = list_unique (challenge.Challenge.submitted_solutions) in 
-      let challenge = let open Challenge in { challenge with submitted_solutions } in 
-                      Persistency.Challenges.update challenge) challenges
+      Persistency.S3.get challenge.Challenge.submitted_solutions 
+      >>= Misc.s3_to_string_list 
+      >>= fun current_solutions ->
+      let submitted_solutions = list_unique current_solutions in 
+      Persistency.S3.set challenge.Challenge.submitted_solutions (string_list_to_s3 submitted_solutions)
+    ) challenges
 
 let reset () =
 let challenges = Persistency.Challenges.list () in 
   Lwt_list.iter_s
     (fun challenge ->
-      let challenge = let open Challenge in { challenge with submitted_solutions = [] } in 
-                      Persistency.Challenges.update challenge) challenges
+      Persistency.S3.set challenge.Challenge.submitted_solutions (string_list_to_s3 [])) challenges
     
-(*
 
+let rec reset_from_sdb ?(token=None) () = 
+  SDB.select ~token Persistency.creds ("select * from " ^ Challenge.domain) 
+  >>=  function 
+        | `Ok (elements, token) -> 
+          (
+            Lwt_list.iter_s
+              (fun (name, attrs) -> 
+                let submitted_solutions = Uid.generate () in 
+                display "resetting %s" name;
+                let attrs = List.filter (fun (k, _) -> try String.sub k 0 (String.length "submitted_solutions") <> "submitted_solutions" with _ -> true) attrs in
+                Persistency.S3.set submitted_solutions (Misc.string_list_to_s3 []) 
+                >>= fun _ -> 
+                SDB.delete_attributes Persistency.creds Challenge.domain name [ ]
+                >>= fun _ ->
+                SDB.put_attributes ~replace:true Persistency.creds Challenge.domain name (("submitted_solutions", Some submitted_solutions) :: attrs)
+                >>= function `Ok -> return ()
+                  | `Error (_, msg) -> failwith msg 
+              ) elements 
+              >>= fun _ -> 
+            match token with 
+                None -> return () 
+              | Some _ -> reset_from_sdb ~token () 
+             
+            
+          )
+        | `Error _ -> display "> error while selecting ;("; return () 
+
+let rec strip ?(token=None) ()= 
+  SDB.select ~token Persistency.creds ("select * from " ^ Challenge.domain) 
+  >>=  function 
+        | `Ok (elements, token) -> 
+          (
+            Lwt_list.iter_s
+              (fun (name, attrs) -> 
+                if (int_of_string name > 20000) then 
+                  SDB.delete_attributes Persistency.creds Challenge.domain name [ ] >>= fun _ -> return ()
+                else return ()
+              ) elements 
+              >>= fun _ -> 
+            match token with 
+                None -> return () 
+              | Some _ -> strip ~token () 
+             
+            
+          )
+        | `Error _ -> display "> error while selecting ;("; return () 
+  (*
 let _ = 
   display "> resetting" ; 
-  Lwt_main.run (reset ()); 
-  display "> renumbering solutions"; 
-  
+  (* Lwt_main.run (strip ()); *) 
+  display "> renumbering solutions";   
   Lwt_main.run (compute_score ()) ; 
   display "> ok it's done and it ran fine" ; 
- display "> now cleaning the list" ;
+  display "> now cleaning the list" ;
   Lwt_main.run (clean_list ()); 
   display "> system cleaned"
-
+ 
   *)

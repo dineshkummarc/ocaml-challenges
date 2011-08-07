@@ -12,32 +12,47 @@ open Printf
 
 
 let sdb_append label elements acc = 
-  snd (List.fold_left (fun (i, acc) e -> (i+1), ((sprintf "%s.%d" label i), e) :: acc) (1, acc) elements)
+  snd (List.fold_left (fun (i, acc) e -> (i+1), ((sprintf "%s.%d" label i), Some e) :: acc) (1, acc) elements)
+
+let string_list_to_s3 l = 
+  Yojson.Basic.to_string (`List (List.map (fun i -> `String i) l))
+
+exception Invalid_input
+
+let s3_to_string_list s = 
+  match Yojson.Basic.from_string s with 
+      `List l -> Lwt.return (List.map (function `String i -> i | _ -> raise Invalid_input) l)
+    | _ -> raise Invalid_input
+
+let assoc label l = 
+  match List.assoc label l with 
+      None -> ""
+    | Some v -> v
 
 let fetch_string l label = 
   try
-    List.assoc label l
+    assoc label l
   with Not_found -> display "> missing %s" label ; raise Not_found
 
 let fetch_int l label = 
   try
-    int_of_string (List.assoc label l)
+    int_of_string (assoc label l)
   with Not_found -> display "> missing %s" label ; raise Not_found
 
 let fetch_bool l label = 
   try
-    bool_of_string (List.assoc label l)
+    bool_of_string (assoc label l)
   with Not_found -> display "> missing %s" label ; raise Not_found
 
 let fetch_string_list l label =
   try
     let rxp = Str.regexp_string (label^".") in
-    List.fold_left (fun acc (k, v) -> if Str.string_match rxp k 0 then v :: acc else acc) [] l
+    List.fold_left (fun acc (k, v) -> if Str.string_match rxp k 0 then (match v with Some v -> v :: acc | None -> acc) else acc) [] l
   with Not_found -> display "> missing %s" label ; raise Not_found
   
 let fetch_date l label = 
   try 
-    Date.of_string (List.assoc label l)
+    Date.of_string (assoc label l)
   with Not_found -> display "> missing %s" label ; raise Not_found
     
 let filter_empty_string_from_list l =
@@ -62,7 +77,7 @@ let build_list_from_s3 s3_f l =
     s3_f el
   ) l
 
-
+let some = function Some v -> v | _ -> raise Not_found
 {shared{
   
   module RR = 

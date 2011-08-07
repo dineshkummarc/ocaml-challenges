@@ -202,16 +202,15 @@ let handler_check challenge_id (name, source) =
                                    | _, `Score _ -> return (e.Solution.uid :: t :: q)
                                    | _, _ -> insert_ordered e q >>= fun ls -> return (t::ls) in
                            
-                           insert_ordered solution challenge.Challenge.submitted_solutions
-                           >>= fun submitted_solutions -> 
-                           display "> new ordered list: %s" (String.concat " " submitted_solutions) ; 
-                           let challenge = let open Challenge in { challenge with submitted_solutions } in
-                                           Persistency.Challenges.update challenge 
-                                           >>= fun _ -> 
-                                           Activity.post
-                                             (match name with 
-                                                 "" -> `Anonymous_participating (challenge.title, challenge.uid) 
-                                               | _ as name -> `Someone_participating (name, challenge.title, challenge.uid)) ; return r
+                           Persistency.S3.get challenge.Challenge.submitted_solutions
+                           >>= Misc.s3_to_string_list 
+                           >>= insert_ordered solution
+                           >>= fun submitted_solutions -> Persistency.S3.set challenge.Challenge.submitted_solutions (string_list_to_s3 submitted_solutions)
+                           >>= fun _ ->
+                           Activity.post
+                             (match name with 
+                                 "" -> `Anonymous_participating (challenge.title, challenge.uid) 
+                               | _ as name -> `Someone_participating (name, challenge.title, challenge.uid)) ; return r
           | _ as r -> return r)
     (fun e -> return (`Panic (Printf.sprintf "Ooops, exception caught: %s" (Printexc.to_string e))))
   
@@ -249,8 +248,10 @@ let handler challenge_id _ =
     ] in 
   let submit_a_solution = unique (div []) in
 
-  let top5 = top5 challenge.submitted_solutions in
-  
+  Persistency.S3.get challenge.submitted_solutions
+  >>= Misc.s3_to_string_list
+  >>= fun submitted_solutions -> 
+  let top5 = top5 submitted_solutions in
   Lwt_list.map_s (fun sdb_key -> Persistency.Solutions.get sdb_key >>= fun solution -> match solution.Solution.author with "" -> return "Anonymous" | author -> return author) top5 
   >>= fun top5_authors -> 
   

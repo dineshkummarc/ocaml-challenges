@@ -34,8 +34,8 @@ module S3 =
       match r with 
         | `Ok s ->  return s
         | `NotFound 
-        | `AccessDenied -> fail S3_error
-        | `Error _ -> fail S3_error
+        | `AccessDenied -> display "> access denied for object %s" objekt ; fail S3_error
+        | `Error s -> display "> s3 error %s" s ; fail S3_error
         | `PermanentRedirect (Some r) -> default_region := r ; load objekt
         | `PermanentRedirect None ->  default_region := `US_EAST_1 ; load objekt
           
@@ -76,8 +76,8 @@ module type LS =
 
     val uid : t -> sdb_key
     val visible : t -> bool
-    val of_sdb : (string * string) list -> t
-    val to_sdb : t -> (string * string) list
+    val of_sdb : (string * string option) list -> t
+    val to_sdb : t -> (string * string option) list
   
     val update_diff : (string -> s3_path Lwt.t) -> t -> diff -> t Lwt.t 
 end
@@ -97,15 +97,20 @@ module LFactory (L : LS) =
     module C = Ocsigen_cache.Make (struct type key = sdb_key type value = L.t end)
             
     let load key = 
+      display "> loading sdb record with key %s" key ;
       SDB.get_attributes creds L.domain key
       >>= function 
         | `Ok l -> return (L.of_sdb l)
         | `Error _ -> fail Error
 
-    let save value = 
+    let save value =
+      display "> about to delete"; 
+      SDB.delete_attributes creds L.domain (L.uid value) []
+      >>= fun _ -> 
+      display "> deleted, now putting" ;
       SDB.put_attributes ~replace:true creds L.domain (L.uid value) (L.to_sdb value)
       >>= function
-        | `Ok -> return ()
+        | `Ok -> display "> put done";  return ()
         | `Error (_, s) -> display "> save error: %s" s ; fail Error
 
     let cache = new C.cache load L.cache_size
@@ -147,11 +152,7 @@ module LFactory (L : LS) =
              (fun (name, attrs) -> 
                try 
                  (try Uid.tick (int_of_string name) with _ -> ()); 
-                 let attrs = List.fold_left
-                   (fun acc -> 
-                     function 
-                       | label, None -> (label, "") :: acc 
-                       | label, Some v -> (label, v) :: acc) [] attrs in
+                 
                  let value = L.of_sdb attrs in
                  let key = L.uid value in 
                  cache # add key value 

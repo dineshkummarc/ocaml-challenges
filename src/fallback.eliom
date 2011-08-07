@@ -21,5 +21,6 @@ let _ =
 
   Appl.register Services.Frontend.solution_list fallback ; 
   Appl.register Services.Frontend.solution_check_fallback fallback; 
+  Appl.register Services.Frontend.new_challenge_interprete_fallback fallback
 
   

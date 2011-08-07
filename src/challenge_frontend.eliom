@@ -20,7 +20,7 @@ let new_handler _ _ =
 
   Nutshell.home [ c ]
 
-let new_challenge_interprete_handler (control_code, sample_solution) _ =
+let new_challenge_interprete_handler _ (control_code, sample_solution) =
   Interpreter.check_and_infer_signature control_code sample_solution
 
 let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags, (control_code, (sample_solution, signature)))))))) =
@@ -34,6 +34,7 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
   let s3_description = Uid.generate () in
   let s3_control_code = Uid.generate () in
   let s3_sample_solution = Uid.generate () in
+  let s3_submitted_solutions = Uid.generate () in
   let uid = Uid.generate () in
     
   let challenge = {
@@ -49,13 +50,14 @@ let new_post_handler _ (author, (title, (description, (difficulty, (hints, (tags
     tags = tags_list ;
     sample_solution = s3_sample_solution ;
     control_code = s3_control_code ;
-    submitted_solutions = [];
+    submitted_solutions = s3_submitted_solutions;
     facebook_id = "";
   } in
 
   Persistency.S3.set s3_description description >>= fun _ ->
   Persistency.S3.set s3_control_code control_code >>= fun _ ->
   Persistency.S3.set s3_sample_solution sample_solution >>= fun _ ->
+  Persistency.S3.set s3_submitted_solutions (Misc.string_list_to_s3 []) >>= fun _ ->
   Persistency.Challenges.update challenge >>= fun _ ->
     let activity = if author = "" then `Anonymous_create (title, uid) else `Someone_create (author, title, uid) in
     Activity.post activity;

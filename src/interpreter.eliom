@@ -90,14 +90,13 @@ let decode json_file =
 let run_benchmark challenge solution = 
   Persistency.S3.get challenge.Challenge.control_code 
   >>= fun control_code ->
-  display "control code: %s" control_code ;
   with_temporary 
     (fun source -> 
      (* generate source file *)
      lwt oc = Lwt_io.open_file ~mode:Lwt_io.output source in 
      lwt _ = 
        Lwt_list.iter_s 
-         (fun s -> display "%s" s ; Lwt_io.write_line oc s)  
+         (fun s -> Lwt_io.write_line oc s)  
          [ 
            stubber ;
            "module B = struct" ; 
@@ -170,7 +169,7 @@ let let_position file ident =
   let rec iter ic lnumber = 
     Lwt_io.read_line ic 
     >>= fun l -> 
-    display "analysing line %s" l ; 
+    
     try 
       let pos = Str.search_forward std_decl l 0 in
       return ((lnumber, pos + 4), (lnumber, pos + 4 + lident))
@@ -191,7 +190,7 @@ let let_position file ident =
 
 let read_annot source file (l1, c1) (l2, c2)  = 
   (* "/tmp/test.ml" 1 0 4 "/tmp/test.ml" 1 0 13 *)
-  display "> looking for annotation on %d %d %d %d" l1 c1 l2 c2 ; 
+  
   let hl = Printf.sprintf "\"%s\" %d \\([ 0-9 ]+\\) \\([ 0-9 ]+\\) \"%s\" %d \\([ 0-9 ]+\\) \\([ 0-9 ]+\\)" (Str.quote source) l1 (Str.quote source) l2 in 
   let rxp = Str.regexp hl in
   Lwt_io.open_file ~mode:Lwt_io.input file
@@ -200,7 +199,7 @@ let read_annot source file (l1, c1) (l2, c2)  =
   let rec iter ic = 
     Lwt_io.read_line ic 
     >>= fun l -> 
-    display "> analysing line %s" l ; 
+   
     match Str.string_match rxp l 0 with 
       | true when ( int_of_string (Str.matched_group 2 l) - int_of_string (Str.matched_group 1 l) = c1 ) -> lwt _ = Lwt_io.read_line ic in 
                 Lwt_io.read_line ic 
@@ -218,7 +217,7 @@ let read_annot source file (l1, c1) (l2, c2)  =
      lwt oc = Lwt_io.open_file ~mode:Lwt_io.output source in 
      lwt _ = 
        Lwt_list.iter_s 
-         (fun s -> display "%s" s ; Lwt_io.write_line oc s)  
+         (fun s -> Lwt_io.write_line oc s)  
          [ 
            stubber ;
            "module B = struct" ; 
@@ -267,7 +266,7 @@ let read_annot source file (l1, c1) (l2, c2)  =
                               >>= fun (p1, p2) -> 
                               read_annot source annot p1 p2 
                               >>= fun signature -> 
-                              display "signature is %s" signature ; 
+                              
                               return (`Signature ("val main : " ^ signature)))
                             (function
                                 | End_of_file -> return (`Invalid_code "no function called benchmark detected")

@@ -178,7 +178,7 @@
         Dom.appendChild form_challenge (Eliom_client.Html5.of_element m2)
       in
       
-      Eliom_client.call_caml_service ~service:s_check_interprete (Js.to_string control_code, Js.to_string sample_solution) ()
+      Eliom_client.call_caml_service ~service:s_check_interprete () (Js.to_string control_code, Js.to_string sample_solution)
         >>= fun resp ->
           Js.Opt.iter (Dom_html.document ## getElementById (Js.string "challenge_instruction")) (
           fun div_instruction ->

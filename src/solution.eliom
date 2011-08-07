@@ -81,22 +81,22 @@ exception BadType
 
 let status_to_sdb acc = function 
   | `Score score -> 
-    ("status.kind", "0") 
-    :: ("status.score", string_of_int score) 
+    ("status.kind", Some "0") 
+    :: ("status.score", Some (string_of_int score)) 
     :: acc
   | `Failed (msg, e) -> 
-    ("status.kind", "1") 
-    :: ("status.msg", msg) 
-    :: ("status.exn", e)
+    ("status.kind", Some "1") 
+    :: ("status.msg", Some msg) 
+    :: ("status.exn", Some e)
     :: acc
   | `Pending -> 
-    ("status.kind", "2") 
+    ("status.kind", Some "2") 
     :: acc
 
 let status_of_sdb l =
-  match int_of_string (List.assoc "status.kind" l) with 
-      0 -> `Score (int_of_string (List.assoc "status.score" l))
-    | 1 -> `Failed (List.assoc "status.msg" l, List.assoc "status.exn" l) 
+  match int_of_string (assoc "status.kind" l) with 
+      0 -> `Score (int_of_string (assoc "status.score" l))
+    | 1 -> `Failed (assoc "status.msg" l, assoc "status.exn" l) 
     | 2 -> `Pending
     | _ -> raise BadType  
         
@@ -104,11 +104,11 @@ let status_of_sdb l =
 let to_sdb t = 
   status_to_sdb 
     [
-      "uid", t.uid ;
-      "author", t.author ; 
-      "challenge_id", t.challenge_id ; 
-      "date", Date.to_string t.date ; 
-      "content", t.content ; 
+      "uid", Some t.uid ;
+      "author", Some t.author ; 
+      "challenge_id", Some t.challenge_id ; 
+      "date", Some (Date.to_string t.date) ; 
+      "content", Some t.content ; 
     ] t.status
 
 

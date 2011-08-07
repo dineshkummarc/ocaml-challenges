@@ -25,7 +25,6 @@ open Eliom_output.Html5
         let js_challenge_elt = Eliom_client.Html5.of_element (unique challenge_elt) in
         Dom.appendChild challenges_list js_challenge_elt; 
         let _ = Event_arrows.run (Event_arrows.clicks js_challenge_elt (Event_arrows.lwt_arr (fun _ -> Eliom_client.change_page ~service (Challenge.uid challenge) ()))) () in
-        
         return ()) challenges
         
   let load_challenges_page container page = 

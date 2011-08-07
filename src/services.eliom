@@ -13,7 +13,8 @@ module Frontend =
     let challenge_new = service [ "challenge"; "new" ] unit ()
     let challenge_new_post = post_service challenge_new (string "author" ** string "title" ** string "description" ** int "difficulty" ** list "hints" (string "value") ** string "tags" ** string "control_code" ** string "sample_solution" ** string "signature") () (* add tags + control_code file sending, and maybe create facebook comment *)
 
-    let new_challenge_interprete = service [ "challenge"; "inteprete" ] (suffix (string "control_code" ** string "sample_solution")) ()
+    let new_challenge_interprete_fallback = service [ "challenge"; "interprete" ] unit () 
+    let new_challenge_interprete = post_service new_challenge_interprete_fallback (string "control_code" ** string "sample_solution") ()
 
     let delete_challenge = service [ "challenge"; "delete" ] (suffix (string "id")) ()
 

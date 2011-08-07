@@ -46,7 +46,7 @@
 
         control_code : s3_path ;
 
-        submitted_solutions : sdb_key list ;
+        submitted_solutions : s3_path ;
 
         facebook_id : string ;
       } deriving (Json)
@@ -227,21 +227,21 @@ let domain = Config.get_param "sdb_domain_challenges"
 (* sdb functions *************************************************************************************)
 
 let to_sdb t = 
-  sdb_append "submitted_solutions" t.submitted_solutions
     (sdb_append "tags" t.tags 
        (sdb_append "hints" t.hints
           [
-            "uid", t.uid ; 
-            "author", t.author ;
-            "active", string_of_bool t.active ; 
-            "submission_date", Date.to_string t.submission_date ; 
-            "title", t.title ;
-            "description", t.description ; 
-             "signature", t.signature ;
-            "difficulty", string_of_int t.difficulty ; 
-            "sample_solution", t.sample_solution ; 
-            "control_code", t.control_code ;
-            "facebook_id", t.facebook_id ; 
+            "uid", Some t.uid ; 
+            "author", Some t.author ;
+            "active", Some (string_of_bool t.active) ; 
+            "submission_date", Some (Date.to_string t.submission_date) ; 
+            "title", Some t.title ;
+            "description", Some t.description ; 
+             "signature", Some t.signature ;
+            "difficulty", Some (string_of_int t.difficulty) ; 
+            "sample_solution", Some t.sample_solution ; 
+            "control_code", Some t.control_code ;
+            "facebook_id", Some t.facebook_id ; 
+            "submitted_solutions", Some t.submitted_solutions
           ]))
 
 let of_sdb l =
@@ -264,7 +264,7 @@ let of_sdb l =
     
     control_code = fetch_string l "control_code" ; 
     
-    submitted_solutions = fetch_string_list l "submitted_solutions" ; 
+    submitted_solutions = fetch_string l "submitted_solutions"  ; 
     
     facebook_id = fetch_string l "facebook_id" ;
 }
