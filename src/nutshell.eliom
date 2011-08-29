@@ -106,6 +106,6 @@ lwt contribute = Cms.get "contribute" in
             pcdata "Initiated the 23th of July 2011 during the #0 OCaml Hackathon, in San Francisco, California"
           ] ; 
         ];
-        analytics; 
+        analytics;  
       ]
     ) >>> return 

@@ -145,7 +145,7 @@ let iter_for_page f s =
 
 let list_node_from_nodelist nl =
   let rec build_list acc nl nb =
-    Js.Optdef.case (nl ## item (nb))
+    Js.Opt.case (nl ## item (nb))
       (fun _ -> List.rev acc)
       (fun el -> Js.Opt.case (Dom_html.CoerceTo.element el) 
                   (fun _ -> List.rev acc)
